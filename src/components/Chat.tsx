@@ -11,22 +11,21 @@ import { getSelectedProvider } from '../utils/storage';
 interface ChatProps {
   pageContent: string;
   pageTitle: string;
-  onSettingsClick: () => void;
+  isLoading: boolean;
+  onRefresh: () => void;
 }
 
-export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
+export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [provider, setProvider] = useState<ApiProvider>('deepseek');
   const { setError } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const MAX_MESSAGES = 10; // 最大消息历史数量
+  const MAX_MESSAGES = 10;
 
-  // 加载保存的消息历史和选中的provider
   useEffect(() => {
     const loadInitialState = async () => {
-      // 加载保存的消息历史
       const savedMessages = localStorage.getItem('chatHistory');
       if (savedMessages) {
         try {
@@ -38,7 +37,6 @@ export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
         }
       }
 
-      // 加载保存的provider
       const savedProvider = await getSelectedProvider();
       if (savedProvider) {
         setProvider(savedProvider);
@@ -48,7 +46,6 @@ export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
     loadInitialState();
   }, []);
 
-  // 保存消息到本地存储
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem('chatHistory', JSON.stringify(messages));
@@ -78,12 +75,11 @@ export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
     if (!input.trim()) return;
 
     try {
-      setIsLoading(true);
+      setIsSending(true);
       const userMessage: ChatMessage = { role: 'user', content: input };
       setMessages(prev => [...prev, userMessage]);
       setInput('');
 
-      // 限制发送的历史消息数量
       const limitedMessages = messages.slice(-MAX_MESSAGES);
       const response = await apiManager.sendMessage(
         provider,
@@ -104,40 +100,12 @@ export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
     } catch (error) {
       setError(handleError(error));
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <h1 className="text-lg font-semibold text-gray-800">Web Assistant</h1>
-        <div className="flex items-center space-x-2">
-          {messages.length > 0 && (
-            <button
-              onClick={clearHistory}
-              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
-              title="Clear chat history"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          )}
-          <button
-            onClick={onSettingsClick}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
-            title="Settings"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
@@ -150,8 +118,8 @@ export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-800'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
               }`}
             >
               <ReactMarkdown
@@ -166,35 +134,57 @@ export function Chat({ pageContent, pageTitle, onSettingsClick }: ChatProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Provider Selector */}
-      <div className="px-4 pt-2">
-        <ProviderSelector onProviderChange={handleProviderChange} />
-      </div>
-
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-200">
-        <div className="relative">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="w-full p-3 pr-20 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1.5 bg-blue-500 text-white rounded-md ${
-              isLoading
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-blue-600'
-            }`}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Sending...' : 'Send'}
-          </button>
+      {/* Bottom Section */}
+      <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        {/* Provider Selector and Actions */}
+        <div className="p-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+          <ProviderSelector onProviderChange={handleProviderChange} />
+          <div className="flex items-center space-x-2">
+            {messages.length > 0 && (
+              <button
+                onClick={clearHistory}
+                className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title="Clear chat history"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+              title="Refresh page content"
+            >
+              <svg className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </form>
+
+        {/* Input */}
+        <form onSubmit={handleSubmit} className="p-3">
+          <div className="relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message..."
+              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={isSending}
+            />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors disabled:opacity-50"
+              disabled={isSending}
+            >
+              {isSending ? 'Sending...' : 'Send'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -42,8 +42,11 @@ export default function WebAssistant() {
   }, []);
 
   return (
-    <div className="w-popup min-h-screen-sm bg-background dark:bg-background-dark">
-      <Header />
+    <div className="flex flex-col h-screen w-[400px] overflow-hidden bg-background dark:bg-background-dark">
+      <Header 
+        pageTitle={pageTitle}
+        onSettingsClick={() => setShowSettings(true)}
+      />
       
       {error && (
         <Toast
@@ -59,18 +62,22 @@ export default function WebAssistant() {
           onClose={() => setSuccess(null)}
         />
       )}
-      {showSettings ? (
-        <Settings 
-          onSaved={() => setShowSettings(false)}
-          onClose={() => setShowSettings(false)}
-        />
-      ) : (
-        <Chat
-          pageContent={pageContent}
-          pageTitle={pageTitle}
-          onSettingsClick={() => setShowSettings(true)}
-        />
-      )}
+      
+      <div className="flex-1 overflow-hidden">
+        {showSettings ? (
+          <Settings 
+            onSaved={() => setShowSettings(false)}
+            onClose={() => setShowSettings(false)}
+          />
+        ) : (
+          <Chat
+            pageContent={pageContent}
+            pageTitle={pageTitle}
+            isLoading={isLoading}
+            onRefresh={fetchContent}
+          />
+        )}
+      </div>
     </div>
   );
 }

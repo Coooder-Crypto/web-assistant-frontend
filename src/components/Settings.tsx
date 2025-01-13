@@ -29,7 +29,6 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
       setIsLoading(true);
       const savedSettings = await getApiSettings();
       
-      // 如果没有设置，添加一个默认的 Deepseek 设置
       if (savedSettings.length === 0) {
         setSettings([{ name: 'Deepseek', provider: 'deepseek', apiKey: '' }]);
       } else {
@@ -65,7 +64,6 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 验证所有必填字段
     const invalidSetting = settings.find(
       setting => !setting.name.trim() || !setting.apiKey.trim()
     );
@@ -79,6 +77,7 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
       await setApiSettings(settings);
       setSuccess('API settings saved successfully!');
       onSaved?.();
+      onClose();
     } catch (error) {
       setError('Failed to save API settings');
       console.error('Failed to save settings:', error);
@@ -87,105 +86,103 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-screen-sm bg-background dark:bg-background-dark">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-xl">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-screen-sm bg-background dark:bg-background-dark">
-      <div className="w-full max-w-popup px-popup-padding">
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-text dark:text-text-dark mb-2">
-              API Settings
-            </h2>
-            <p className="text-text-secondary dark:text-text-dark-secondary">
-              Configure your API providers
-            </p>
-          </div>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={(e) => {
+      if (e.target === e.currentTarget) onClose();
+    }}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[400px] max-h-[600px] overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-            title="Close"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
         </div>
+        
+        <div className="p-4 overflow-y-auto max-h-[calc(600px-8rem)]">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {settings.map((setting, index) => (
+              <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={setting.name}
+                    onChange={(e) => handleUpdateSetting(index, 'name', e.target.value)}
+                    placeholder="API Name"
+                    className="flex-1 px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveApi(index)}
+                    disabled={settings.length === 1}
+                    className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {settings.map((setting, index) => (
-            <div key={index} className="bg-white dark:bg-background-dark rounded-lg shadow-md p-4 space-y-4">
-              <div className="flex justify-between items-center">
-                <input
-                  type="text"
-                  value={setting.name}
-                  onChange={(e) => handleUpdateSetting(index, 'name', e.target.value)}
-                  placeholder="API Name *"
-                  className="flex-1 p-2 text-text dark:text-text-dark bg-transparent border-2 border-border dark:border-border-dark rounded-lg focus:outline-none focus:border-primary dark:focus:border-primary-light"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveApi(index)}
-                  className="ml-2 p-2 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
-                  disabled={settings.length === 1}
-                  title={settings.length === 1 ? "Can't remove the last API provider" : "Remove this API provider"}
+                <select
+                  value={setting.provider}
+                  onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value as ApiProvider)}
+                  className="w-full px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent"
                 >
-                  Remove
-                </button>
+                  {API_PROVIDERS.map((provider) => (
+                    <option key={provider.value} value={provider.value}>
+                      {provider.label}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="relative">
+                  <input
+                    type={editingKey === `${index}` ? 'text' : 'password'}
+                    value={setting.apiKey}
+                    onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
+                    placeholder="API Key"
+                    className="w-full px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent pr-16"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                  >
+                    {editingKey === `${index}` ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
+            ))}
+          </form>
+        </div>
 
-              <select
-                value={setting.provider}
-                onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value as ApiProvider)}
-                className="w-full p-2 text-text dark:text-text-dark bg-transparent border-2 border-border dark:border-border-dark rounded-lg focus:outline-none focus:border-primary dark:focus:border-primary-light"
-              >
-                {API_PROVIDERS.map((provider) => (
-                  <option key={provider.value} value={provider.value}>
-                    {provider.label}
-                  </option>
-                ))}
-              </select>
-
-              <div className="relative">
-                <input
-                  type={editingKey === `${index}` ? 'text' : 'password'}
-                  value={setting.apiKey}
-                  onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
-                  placeholder="API Key *"
-                  className="w-full p-2 text-text dark:text-text-dark bg-transparent border-2 border-border dark:border-border-dark rounded-lg focus:outline-none focus:border-primary dark:focus:border-primary-light font-mono"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-secondary dark:text-text-dark-secondary hover:text-text dark:hover:text-text-dark"
-                >
-                  {editingKey === `${index}` ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </div>
-          ))}
-
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
           <button
             type="button"
             onClick={handleAddApi}
-            className="w-full py-3 px-4 border-2 border-dashed border-border dark:border-border-dark hover:border-primary dark:hover:border-primary-light text-text-secondary dark:text-text-dark-secondary rounded-lg transition-colors focus:outline-none"
+            className="w-full py-2 px-4 bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
           >
-            + Add API Provider
+            Add New API
           </button>
-
           <button
-            type="submit"
-            className="w-full py-3 px-4 bg-primary hover:bg-primary-hover dark:bg-primary-light dark:hover:bg-primary text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-primary-light"
+            onClick={handleSubmit}
+            className="w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors text-sm font-medium focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
           >
-            Save Settings
+            Save Changes
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );
