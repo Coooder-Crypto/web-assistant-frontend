@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { apiManager } from '../utils/api/index';
 import { ChatMessage, ApiProvider } from '@src/types';
-import { ProviderSelector } from './ProviderSelector';
+import { Selector, Option } from './common/Selector';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useApp } from '../store/AppContext';
 import { handleError } from '../store/AppContext';
-import { getSelectedProvider } from '../utils/storage';
+import { getSelectedProvider, setSelectedProvider, getApiSettings } from '../utils/storage';
 
 interface ChatProps {
   pageContent: string;
@@ -20,26 +20,47 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [provider, setProvider] = useState<ApiProvider>('deepseek');
+  const [providers, setProviders] = useState<Option<ApiProvider>[]>([]);
   const { setError } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MAX_MESSAGES = 10;
 
   useEffect(() => {
     const loadInitialState = async () => {
-      const savedMessages = localStorage.getItem('chatHistory');
-      if (savedMessages) {
-        try {
-          const parsed = JSON.parse(savedMessages);
-          setMessages(parsed);
-        } catch (e) {
-          console.error('Failed to parse saved messages:', e);
-          localStorage.removeItem('chatHistory');
-        }
-      }
+      try {
+        const [savedMessages, savedProvider, apiSettings] = await Promise.all([
+          localStorage.getItem('chatHistory'),
+          getSelectedProvider(),
+          getApiSettings(),
+        ]);
 
-      const savedProvider = await getSelectedProvider();
-      if (savedProvider) {
-        setProvider(savedProvider);
+        // 加载消息历史
+        if (savedMessages) {
+          try {
+            const parsed = JSON.parse(savedMessages);
+            setMessages(parsed);
+          } catch (e) {
+            console.error('Failed to parse saved messages:', e);
+            localStorage.removeItem('chatHistory');
+          }
+        }
+
+        // 加载API提供者选项
+        const providerOptions = apiSettings.map(setting => ({
+          label: setting.name || setting.provider,
+          value: setting.provider,
+        }));
+        setProviders(providerOptions);
+
+        // 设置当前选中的提供者
+        if (savedProvider && apiSettings.some(s => s.provider === savedProvider)) {
+          setProvider(savedProvider);
+        } else if (apiSettings.length > 0) {
+          setProvider(apiSettings[0].provider);
+          await setSelectedProvider(apiSettings[0].provider);
+        }
+      } catch (error) {
+        console.error('Failed to load initial state:', error);
       }
     };
 
@@ -65,8 +86,9 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
     localStorage.removeItem('chatHistory');
   };
 
-  const handleProviderChange = (newProvider: ApiProvider) => {
+  const handleProviderChange = async (newProvider: ApiProvider) => {
     setProvider(newProvider);
+    await setSelectedProvider(newProvider);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,7 +160,15 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
       <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         {/* Provider Selector and Actions */}
         <div className="p-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-          <ProviderSelector onProviderChange={handleProviderChange} />
+          {providers.length > 0 && (
+            <Selector
+              options={providers}
+              value={provider}
+              onChange={handleProviderChange}
+              label="Using:"
+              className="min-w-[120px]"
+            />
+          )}
           <div className="flex items-center space-x-2">
             {messages.length > 0 && (
               <button

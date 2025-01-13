@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { getApiSettings, setApiSettings, ApiSettings } from '../utils/storage';
 import { useApp } from '../store/AppContext';
 import { ApiProvider } from '@src/types';
+import { Selector, Option } from './common/Selector';
 
 interface SettingsProps {
   onSaved?: () => void;
   onClose: () => void;
 }
 
-const API_PROVIDERS: { label: string; value: ApiProvider }[] = [
+const API_PROVIDERS: Option<ApiProvider>[] = [
   { label: 'Deepseek', value: 'deepseek' },
   { label: 'ChatGPT', value: 'openai' },
   { label: 'Claude', value: 'anthropic' },
@@ -135,17 +136,13 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
                   </button>
                 </div>
 
-                <select
+                <Selector
+                  options={API_PROVIDERS}
                   value={setting.provider}
-                  onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value as ApiProvider)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent"
-                >
-                  {API_PROVIDERS.map((provider) => (
-                    <option key={provider.value} value={provider.value}>
-                      {provider.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleUpdateSetting(index, 'provider', value)}
+                  label="Provider:"
+                  className="w-full"
+                />
 
                 <div className="relative">
                   <input
