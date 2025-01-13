@@ -74,6 +74,14 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
       return;
     }
 
+    // Check for duplicate names
+    const names = settings.map(s => s.name.trim());
+    const hasDuplicates = names.some((name, index) => names.indexOf(name) !== index);
+    if (hasDuplicates) {
+      setError('Duplicate API names are not allowed');
+      return;
+    }
+
     try {
       await setApiSettings(settings);
       setSuccess('API settings saved successfully!');
@@ -99,30 +107,30 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={(e) => {
       if (e.target === e.currentTarget) onClose();
     }}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[400px] max-h-[600px] overflow-hidden">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[400px] max-h-[90vh] flex flex-col">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Settings</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
           >
-            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
         </div>
         
-        <div className="p-4 overflow-y-auto max-h-[calc(600px-8rem)]">
+        <div className="flex-1 overflow-y-auto min-h-0 p-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             {settings.map((setting, index) => (
-              <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
+              <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-3">
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={setting.name}
                     onChange={(e) => handleUpdateSetting(index, 'name', e.target.value)}
                     placeholder="API Name"
-                    className="flex-1 px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent"
+                    className="flex-1 px-3 py-1.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent"
                   />
                   <button
                     type="button"
@@ -150,12 +158,12 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
                     value={setting.apiKey}
                     onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
                     placeholder="API Key"
-                    className="w-full px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent pr-16"
+                    className="w-full px-3 py-1.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent pr-16"
                   />
                   <button
                     type="button"
                     onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-500 rounded hover:bg-gray-200 dark:hover:bg-gray-400 transition-colors"
                   >
                     {editingKey === `${index}` ? 'Hide' : 'Show'}
                   </button>
@@ -165,17 +173,17 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
           </form>
         </div>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-600 space-y-3">
           <button
             type="button"
             onClick={handleAddApi}
-            className="w-full py-2 px-4 bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
+            className="w-full py-2 px-4 bg-gray-50 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors text-sm font-medium"
           >
             Add New API
           </button>
           <button
             onClick={handleSubmit}
-            className="w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors text-sm font-medium focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors text-sm font-medium"
           >
             Save Changes
           </button>

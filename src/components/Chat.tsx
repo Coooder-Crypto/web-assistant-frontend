@@ -47,7 +47,7 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
 
         // 加载API提供者选项
         const providerOptions = apiSettings.map(setting => ({
-          label: setting.name || setting.provider,
+          label: setting.name,
           value: setting.provider,
         }));
         setProviders(providerOptions);
@@ -103,8 +103,15 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
       setInput('');
 
       const limitedMessages = messages.slice(-MAX_MESSAGES);
+      
+      // 根据provider找到对应的apiSetting
+      const apiSetting = (await getApiSettings()).find(s => s.provider === provider);
+      if (!apiSetting) {
+        throw new Error('Selected API provider not found');
+      }
+
       const response = await apiManager.sendMessage(
-        provider,
+        apiSetting.provider,
         input,
         limitedMessages,
         {
@@ -167,6 +174,7 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
               onChange={handleProviderChange}
               label="Using:"
               className="min-w-[120px]"
+              dropUp={true}
             />
           )}
           <div className="flex items-center space-x-2">

@@ -13,6 +13,7 @@ interface SelectorProps<T = string> {
   className?: string;
   disabled?: boolean;
   placeholder?: string;
+  dropUp?: boolean;
 }
 
 export function Selector<T = string>({
@@ -23,6 +24,7 @@ export function Selector<T = string>({
   className = '',
   disabled = false,
   placeholder,
+  dropUp = false,
 }: SelectorProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +79,7 @@ export function Selector<T = string>({
         </button>
 
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 max-h-60 overflow-auto">
+          <div className={`absolute z-50 w-full ${dropUp ? 'bottom-[calc(100%+0.25rem)]' : 'top-[calc(100%+0.25rem)]'} bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 max-h-60 overflow-auto`}>
             {options.map((option) => (
               <div
                 key={String(option.value)}
@@ -86,7 +88,7 @@ export function Selector<T = string>({
                   setIsOpen(false);
                 }}
                 className={`px-3 py-2 text-sm cursor-pointer
-                  ${option.value === value 
+                  ${String(option.value) === String(value)
                     ? 'bg-primary/10 text-primary dark:text-primary-light' 
                     : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }

@@ -42,7 +42,7 @@ export default function WebAssistant() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-[400px] overflow-hidden bg-background dark:bg-background-dark">
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-background dark:bg-background-dark">
       <Header 
         pageTitle={pageTitle}
         onSettingsClick={() => setShowSettings(true)}
