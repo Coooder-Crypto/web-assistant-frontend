@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Settings } from './Settings';
+import Settings from './Settings';
 
 interface HeaderProps {
   pageTitle: string;

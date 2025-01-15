@@ -4,6 +4,12 @@ import { ChatGPTAPI } from './chatgpt';
 
 export type { ApiProvider, ChatMessage, ChatContext, ChatOptions, ChatResponse };
 
+export const API_PROVIDERS = [
+  { label: 'Deepseek', value: 'deepseek' },
+  { label: 'ChatGPT', value: 'openai' },
+
+] as const;
+
 class APIManager {
   private static instance: APIManager;
   private apis: Map<ApiProvider, ChatAPI>;

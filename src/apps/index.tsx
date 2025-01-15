@@ -1,5 +1,5 @@
 import { Chat } from "@src/components/Chat";
-import { Settings } from "@src/components/Settings";
+import { default as Settings } from "@src/components/Settings";
 import { Toast } from "@src/components/Toast";
 import { Header } from "@src/components/Header";
 import { useApp } from "@src/store/AppContext";
