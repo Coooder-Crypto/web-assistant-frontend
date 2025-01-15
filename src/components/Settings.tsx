@@ -1,19 +1,41 @@
 import React, { useEffect, useState } from 'react';
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  IconButton, 
+  TextField, 
+  Button, 
+  Box, 
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
+  Stack,
+  CircularProgress,
+  InputAdornment
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { getApiSettings, setApiSettings, ApiSettings } from '../utils/storage';
 import { useApp } from '../store/AppContext';
 import { ApiProvider } from '@src/types';
-import { Selector, Option } from './common/Selector';
 
 interface SettingsProps {
   onSaved?: () => void;
   onClose: () => void;
 }
 
-const API_PROVIDERS: Option<ApiProvider>[] = [
+const API_PROVIDERS = [
   { label: 'Deepseek', value: 'deepseek' },
   { label: 'ChatGPT', value: 'openai' },
   { label: 'Claude', value: 'anthropic' },
-];
+] as const;
 
 export function Settings({ onSaved, onClose }: SettingsProps) {
   const [settings, setSettings] = useState<ApiSettings[]>([]);
@@ -74,7 +96,6 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
       return;
     }
 
-    // Check for duplicate names
     const names = settings.map(s => s.name.trim());
     const hasDuplicates = names.some((name, index) => names.indexOf(name) !== index);
     if (hasDuplicates) {
@@ -95,100 +116,116 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-xl">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </div>
+      <Dialog open fullWidth maxWidth="sm">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      </Dialog>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={(e) => {
-      if (e.target === e.currentTarget) onClose();
-    }}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[400px] max-h-[90vh] flex flex-col">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Settings</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-          >
-            <svg className="w-5 h-5 text-gray-500 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto min-h-0 p-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {settings.map((setting, index) => (
-              <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
+    <Dialog 
+      open 
+      onClose={onClose}
+      fullWidth 
+      maxWidth="sm"
+    >
+      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        Settings
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{ color: 'grey.500' }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent dividers>
+        <Stack spacing={2} component="form" onSubmit={handleSubmit}>
+          {settings.map((setting, index) => (
+            <Paper key={index} variant="outlined" sx={{ p: 2 }}>
+              <Stack spacing={2}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
                     value={setting.name}
                     onChange={(e) => handleUpdateSetting(index, 'name', e.target.value)}
                     placeholder="API Name"
-                    className="flex-1 px-3 py-1.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent"
+                    label="Name"
                   />
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => handleRemoveApi(index)}
                     disabled={settings.length === 1}
-                    className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    color="error"
+                    size="small"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
 
-                <Selector
-                  options={API_PROVIDERS}
-                  value={setting.provider}
-                  onChange={(value) => handleUpdateSetting(index, 'provider', value)}
-                  label="Provider:"
-                  className="w-full"
+                <FormControl fullWidth size="small">
+                  <InputLabel>Provider</InputLabel>
+                  <Select
+                    value={setting.provider}
+                    label="Provider"
+                    onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value)}
+                  >
+                    {API_PROVIDERS.map((provider) => (
+                      <MenuItem key={provider.value} value={provider.value}>
+                        {provider.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  type={editingKey === `${index}` ? 'text' : 'password'}
+                  value={setting.apiKey}
+                  onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
+                  placeholder="API Key"
+                  label="API Key"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
+                          edge="end"
+                          size="small"
+                        >
+                          {editingKey === `${index}` ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
+              </Stack>
+            </Paper>
+          ))}
+        </Stack>
+      </DialogContent>
 
-                <div className="relative">
-                  <input
-                    type={editingKey === `${index}` ? 'text' : 'password'}
-                    value={setting.apiKey}
-                    onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
-                    placeholder="API Key"
-                    className="w-full px-3 py-1.5 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm focus:ring-2 focus:ring-primary-light focus:border-transparent pr-16"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-500 rounded hover:bg-gray-200 dark:hover:bg-gray-400 transition-colors"
-                  >
-                    {editingKey === `${index}` ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </form>
-        </div>
-
-        <div className="p-4 border-t border-gray-200 dark:border-gray-600 space-y-3">
-          <button
-            type="button"
-            onClick={handleAddApi}
-            className="w-full py-2 px-4 bg-gray-50 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors text-sm font-medium"
-          >
-            Add New API
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors text-sm font-medium"
-          >
-            Save Changes
-          </button>
-        </div>
-      </div>
-    </div>
+      <DialogActions sx={{ flexDirection: 'column', p: 2, gap: 1 }}>
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={handleAddApi}
+        >
+          Add New API
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleSubmit}
+        >
+          Save Changes
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

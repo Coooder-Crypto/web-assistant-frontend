@@ -5,6 +5,7 @@ import { Header } from "@src/components/Header";
 import { useApp } from "@src/store/AppContext";
 import { useEffect, useState } from "react";
 import { reader } from "@src/utils/reader";
+import { Box, Container, Alert, Snackbar } from "@mui/material";
 
 export default function WebAssistant() {
   const [showSettings, setShowSettings] = useState(false);
@@ -42,28 +43,47 @@ export default function WebAssistant() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background dark:bg-background-dark">
+    <Box 
+      sx={{ 
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        bgcolor: 'background.default'
+      }}
+    >
       <Header 
         pageTitle={pageTitle}
         onSettingsClick={() => setShowSettings(true)}
       />
       
-      {error && (
-        <Toast
-          message={error}
-          type="error"
-          onClose={() => setError(null)}
-        />
-      )}
-      {success && (
-        <Toast
-          message={success}
-          type="success"
-          onClose={() => setSuccess(null)}
-        />
-      )}
+      <Snackbar 
+        open={!!error} 
+        autoHideDuration={6000} 
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar 
+        open={!!success} 
+        autoHideDuration={3000} 
+        onClose={() => setSuccess(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSuccess(null)} severity="success" sx={{ width: '100%' }}>
+          {success}
+        </Alert>
+      </Snackbar>
       
-      <div className="flex-1 overflow-hidden">
+      <Box sx={{ 
+        flex: 1,
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
         {showSettings ? (
           <Settings 
             onSaved={() => setShowSettings(false)}
@@ -77,7 +97,7 @@ export default function WebAssistant() {
             onRefresh={fetchContent}
           />
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

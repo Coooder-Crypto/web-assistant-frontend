@@ -1,29 +1,31 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Box, IconButton, Stack } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
 interface ChatInputProps {
   onSubmit: (input: string) => void;
   loading: boolean;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ onSubmit, loading }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({
+  onSubmit,
+  loading
+}) => {
   const [input, setInput] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, isSummary: boolean = false) => {
     e.preventDefault();
-    if (input.trim() && !loading) {
-      onSubmit(input.trim());
-      setInput('');
+    if (loading) return;
+    
+    const message = isSummary ? "概括这个页面" : input.trim();
+    if (message) {
+      onSubmit(message);
+      if (!isSummary) {
+        setInput('');
+      }
     }
   };
-
-  // 自动调整文本框高度
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
-    }
-  }, [input]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -33,35 +35,57 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSubmit, loading }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative">
+    <Box
+      component="form"
+      onSubmit={(e) => handleSubmit(e)}
+      sx={{
+        display: 'flex',
+        gap: 1,
+        p: 2,
+        borderTop: 1,
+        borderColor: 'divider',
+        backgroundColor: 'background.paper'
+      }}
+    >
       <textarea
-        ref={textareaRef}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Type your message..."
-        className="w-full p-3 pr-12 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none min-h-[44px] max-h-[150px]"
         disabled={loading}
-        rows={1}
+        style={{
+          flex: 1,
+          padding: '8px 12px',
+          borderRadius: '8px',
+          border: '1px solid #ddd',
+          resize: 'none',
+          fontFamily: 'inherit',
+          fontSize: 'inherit',
+          lineHeight: '1.5',
+          outline: 'none',
+          minHeight: '40px',
+          maxHeight: '120px',
+        }}
       />
-      <button
-        type="submit"
-        disabled={!input.trim() || loading}
-        className={`absolute right-2 bottom-2 p-2 rounded-lg transition-colors ${
-          input.trim() && !loading
-            ? 'text-blue-500 hover:bg-blue-50'
-            : 'text-gray-400'
-        }`}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5"
+      <Stack spacing={1} sx={{ justifyContent: 'flex-end' }}>
+        <IconButton 
+          onClick={(e) => handleSubmit(e, true)}
+          disabled={loading}
+          color="primary"
+          size="small"
+          title="Summarize page"
         >
-          <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-        </svg>
-      </button>
-    </form>
+          <AutoFixHighIcon />
+        </IconButton>
+        <IconButton 
+          type="submit" 
+          disabled={!input.trim() || loading}
+          color="primary"
+          size="small"
+        >
+          <SendIcon />
+        </IconButton>
+      </Stack>
+    </Box>
   );
 };

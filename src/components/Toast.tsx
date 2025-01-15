@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { Alert, Snackbar, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface ToastProps {
   message: string;
@@ -16,20 +18,28 @@ export function Toast({ message, type, onClose }: ToastProps) {
   }, [onClose]);
 
   return (
-    <div
-      className={`fixed top-16 right-4 left-4 p-3 rounded-lg shadow-lg z-50 transition-all transform ${
-        type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-      }`}
+    <Snackbar
+      open={true}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      autoHideDuration={3000}
+      onClose={onClose}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{message}</span>
-        <button
-          onClick={onClose}
-          className="ml-4 text-gray-400 hover:text-gray-600"
-        >
-          ×
-        </button>
-      </div>
-    </div>
+      <Alert
+        severity={type}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={onClose}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+        sx={{ width: '100%' }}
+      >
+        {message}
+      </Alert>
+    </Snackbar>
   );
 }
