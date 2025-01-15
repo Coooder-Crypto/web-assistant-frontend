@@ -13,6 +13,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   loading
 }) => {
   const [input, setInput] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = (e: React.FormEvent, isSummary: boolean = false) => {
     e.preventDefault();
@@ -41,7 +42,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       sx={{
         display: 'flex',
         gap: 1,
-        p: 2,
+        p: 1,
         borderTop: 1,
         borderColor: 'divider',
         backgroundColor: 'background.paper'
@@ -51,39 +52,46 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         placeholder="Type your message..."
         disabled={loading}
         style={{
           flex: 1,
-          padding: '8px 12px',
-          borderRadius: '8px',
-          border: '1px solid #ddd',
+          padding: '6px 10px',
+          borderRadius: '6px',
+          border: `1px solid ${isFocused ? '#1976d2' : '#ddd'}`,
           resize: 'none',
           fontFamily: 'inherit',
-          fontSize: 'inherit',
+          fontSize: '0.75rem',
           lineHeight: '1.5',
           outline: 'none',
-          minHeight: '40px',
+          minHeight: '32px',
           maxHeight: '120px',
+          transition: 'all 0.2s ease',
+          WebkitAppearance: 'none',
+          boxShadow: isFocused ? '0 0 0 1px #1976d2' : 'none',
         }}
       />
-      <Stack spacing={1} sx={{ justifyContent: 'flex-end' }}>
+      <Stack spacing={0.5} sx={{ justifyContent: 'flex-end' }}>
         <IconButton 
           onClick={(e) => handleSubmit(e, true)}
           disabled={loading}
           color="primary"
           size="small"
           title="Summarize page"
+          sx={{ padding: '4px' }}
         >
-          <AutoFixHighIcon />
+          <AutoFixHighIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
         <IconButton 
           type="submit" 
           disabled={!input.trim() || loading}
           color="primary"
           size="small"
+          sx={{ padding: '4px' }}
         >
-          <SendIcon />
+          <SendIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
       </Stack>
     </Box>

@@ -33,6 +33,7 @@ export interface ApiSettings {
   name: string;
   provider: ApiProvider;
   apiKey: string;
+  model?: string;
 }
 
 // 迁移旧的 API key

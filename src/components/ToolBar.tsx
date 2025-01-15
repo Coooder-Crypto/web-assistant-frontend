@@ -1,13 +1,17 @@
 import React from 'react';
-import { Box, IconButton, FormControl, Select, MenuItem } from '@mui/material';
+import { Box, IconButton, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { ApiProvider } from '@src/types';
 
 interface ToolBarProps {
-  providers?: { label: string; value: ApiProvider }[];
-  selectedProvider?: ApiProvider;
-  onProviderChange?: (provider: ApiProvider) => Promise<void>;
+  providers?: { 
+    name: string;
+    provider: ApiProvider;
+    model?: string;
+  }[];
+  selectedProvider?: string;  // 使用 API 名称作为标识
+  onProviderChange?: (name: string) => Promise<void>;
   onClear: () => void;
   onRefresh: () => void;
   disabled: boolean;
@@ -28,39 +32,73 @@ export const ToolBar: React.FC<ToolBarProps> = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      p: 1,
+      px: 1,
       borderBottom: 1,
       borderColor: 'divider'
     }}>
-      <FormControl size="small" sx={{ minWidth: 120 }}>
-        <Select
-          value={selectedProvider}
-          onChange={(e) => onProviderChange?.(e.target.value as ApiProvider)}
-          disabled={loading}
-          size="small"
-        >
-          {providers?.map((provider) => (
-            <MenuItem key={provider.value} value={provider.value}>
-              {provider.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <InputLabel sx={{ 
+          color: 'text.primary', 
+          fontSize: '0.75rem',
+          transform: 'none',
+          position: 'static'
+        }}>Model:</InputLabel>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <Select
+            value={selectedProvider || ''}
+            onChange={(e) => onProviderChange?.(e.target.value)}
+            disabled={loading}
+            size="small"
+            MenuProps={{
+              anchorOrigin: {
+                vertical: 'top',
+                horizontal: 'left',
+              },
+              transformOrigin: {
+                vertical: 'bottom',
+                horizontal: 'left',
+              },
+              sx: {
+                '& .MuiPaper-root': {
+                  mb: 0.5,
+                  boxShadow: '0 -2px 8px rgba(0,0,0,0.15)'
+                }
+              }
+            }}
+            sx={{ 
+              height: '32px',
+              fontSize: '0.75rem',
+              '.MuiSelect-select': {
+                padding: '4px 8px'
+              }
+            }}
+          >
+            {providers?.map((provider) => (
+              <MenuItem 
+                key={provider.name}
+                value={provider.name}
+                sx={{ fontSize: '0.75rem' }}
+              >
+                {provider.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 0.5 }}>
         <IconButton
           onClick={onClear}
           disabled={disabled || loading}
           size="small"
         >
-          <DeleteIcon />
+          <DeleteIcon fontSize="inherit" />
         </IconButton>
         <IconButton
           onClick={onRefresh}
           disabled={loading}
           size="small"
         >
-          <RefreshIcon />
+          <RefreshIcon fontSize="inherit"/>
         </IconButton>
       </Box>
     </Box>

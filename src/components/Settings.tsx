@@ -131,99 +131,135 @@ export function Settings({ onSaved, onClose }: SettingsProps) {
       fullWidth 
       maxWidth="sm"
     >
-      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <DialogTitle 
+        sx={{ 
+          m: 0, 
+          p: 1.5, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          fontSize: '0.875rem'
+        }}
+      >
         Settings
         <IconButton
           aria-label="close"
           onClick={onClose}
+          size="small"
           sx={{ color: 'grey.500' }}
         >
-          <CloseIcon />
+          <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers>
-        <Stack spacing={2} component="form" onSubmit={handleSubmit}>
+      <DialogContent dividers sx={{ p: 1.5 }}>
+        <Stack spacing={1.5} component="form" onSubmit={handleSubmit}>
           {settings.map((setting, index) => (
-            <Paper key={index} variant="outlined" sx={{ p: 2 }}>
-              <Stack spacing={2}>
+            <Paper key={index} variant="outlined" sx={{ p: 1.5 }}>
+              <Stack spacing={1.5}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <TextField
-                    fullWidth
                     size="small"
+                    label="Name"
                     value={setting.name}
                     onChange={(e) => handleUpdateSetting(index, 'name', e.target.value)}
-                    placeholder="API Name"
-                    label="Name"
+                    required
+                    fullWidth
+                    InputLabelProps={{
+                      sx: { fontSize: '0.75rem' }
+                    }}
+                    inputProps={{
+                      sx: { fontSize: '0.75rem' }
+                    }}
                   />
-                  <IconButton
+                  <FormControl required fullWidth size="small">
+                    <InputLabel sx={{ fontSize: '0.75rem' }}>Provider</InputLabel>
+                    <Select
+                      value={setting.provider}
+                      label="Provider"
+                      onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value)}
+                      sx={{ fontSize: '0.75rem' }}
+                    >
+                      {API_PROVIDERS.map((provider) => (
+                        <MenuItem 
+                          key={provider.value} 
+                          value={provider.value}
+                          sx={{ fontSize: '0.75rem' }}
+                        >
+                          {provider.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <IconButton 
                     onClick={() => handleRemoveApi(index)}
-                    disabled={settings.length === 1}
-                    color="error"
                     size="small"
+                    sx={{ alignSelf: 'center' }}
                   >
-                    <DeleteIcon />
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
-
-                <FormControl fullWidth size="small">
-                  <InputLabel>Provider</InputLabel>
-                  <Select
-                    value={setting.provider}
-                    label="Provider"
-                    onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value)}
-                  >
-                    {API_PROVIDERS.map((provider) => (
-                      <MenuItem key={provider.value} value={provider.value}>
-                        {provider.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
                 <TextField
-                  fullWidth
                   size="small"
-                  type={editingKey === `${index}` ? 'text' : 'password'}
+                  label="API Key"
                   value={setting.apiKey}
                   onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
-                  placeholder="API Key"
-                  label="API Key"
+                  required
+                  fullWidth
+                  type={editingKey === `${index}` ? 'text' : 'password'}
                   InputProps={{
+                    sx: { fontSize: '0.75rem' },
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
+                          size="small"
                           onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
                           edge="end"
-                          size="small"
                         >
-                          {editingKey === `${index}` ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          {editingKey === `${index}` ? (
+                            <VisibilityOffIcon fontSize="small" />
+                          ) : (
+                            <VisibilityIcon fontSize="small" />
+                          )}
                         </IconButton>
                       </InputAdornment>
-                    ),
+                    )
+                  }}
+                  InputLabelProps={{
+                    sx: { fontSize: '0.75rem' }
                   }}
                 />
               </Stack>
             </Paper>
           ))}
+          <Button
+            startIcon={<AddIcon />}
+            onClick={handleAddApi}
+            variant="outlined"
+            fullWidth
+            size="small"
+            sx={{ fontSize: '0.75rem' }}
+          >
+            Add API
+          </Button>
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ flexDirection: 'column', p: 2, gap: 1 }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={<AddIcon />}
-          onClick={handleAddApi}
+      <DialogActions sx={{ p: 1.5 }}>
+        <Button 
+          onClick={onClose}
+          size="small"
+          sx={{ fontSize: '0.75rem' }}
         >
-          Add New API
+          Cancel
         </Button>
-        <Button
-          fullWidth
-          variant="contained"
+        <Button 
           onClick={handleSubmit}
+          variant="contained"
+          size="small"
+          sx={{ fontSize: '0.75rem' }}
         >
-          Save Changes
+          Save
         </Button>
       </DialogActions>
     </Dialog>

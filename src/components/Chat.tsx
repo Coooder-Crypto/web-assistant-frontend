@@ -10,7 +10,7 @@ import { useApp } from '../store/AppContext';
 import { handleError } from '../store/AppContext';
 import { getSelectedProvider, setSelectedProvider, getApiSettings } from '../utils/storage';
 import { ChatInput } from './ChatInput';
-import { ToolBar } from './ToolBar'; // Add this line
+import { ToolBar } from './ToolBar';
 
 interface ChatProps {
   pageContent: string;
@@ -22,8 +22,8 @@ interface ChatProps {
 export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
-  const [provider, setProvider] = useState<ApiProvider>('deepseek');
-  const [providers, setProviders] = useState<{ label: string; value: ApiProvider }[]>([]);
+  const [currentApiName, setCurrentApiName] = useState<string>('');
+  const [providers, setProviders] = useState<{ name: string; provider: ApiProvider; model?: string }[]>([]);
   const { setError } = useApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MAX_MESSAGES = 10;
@@ -48,24 +48,26 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
         }
 
         const providerOptions = apiSettings.map(setting => ({
-          label: setting.name,
-          value: setting.provider as ApiProvider,
+          name: setting.name,
+          provider: setting.provider,
+          model: setting.model
         }));
         setProviders(providerOptions);
 
-        if (savedProvider && apiSettings.some(s => s.provider === savedProvider)) {
-          setProvider(savedProvider);
-        } else if (apiSettings.length > 0) {
-          setProvider(apiSettings[0].provider);
-          await setSelectedProvider(apiSettings[0].provider);
+        if (savedProvider) {
+          const savedSetting = apiSettings.find(s => s.provider === savedProvider);
+          if (savedSetting) {
+            setCurrentApiName(savedSetting.name);
+          }
         }
       } catch (error) {
-        console.error('Failed to load initial state:', error);
+        console.error('Error loading initial state:', error);
+        setError(handleError(error));
       }
     };
 
     loadInitialState();
-  }, []);
+  }, [setError]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,28 +77,46 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
     localStorage.setItem('chatHistory', JSON.stringify(messages));
   }, [messages]);
 
-  const handleSend = async (input: string) => {
-    if (!input.trim() || isSending) return;
+  const handleProviderChange = async (name: string) => {
+    try {
+      const setting = providers.find(p => p.name === name);
+      if (setting) {
+        setCurrentApiName(name);
+        await setSelectedProvider(setting.provider);
+      }
+    } catch (error) {
+      console.error('Error changing provider:', error);
+      setError(handleError(error));
+    }
+  };
 
-    const newMessage: ChatMessage = {
-      role: 'user',
-      content: input,
-    };
+  const getCurrentProvider = () => {
+    const setting = providers.find(p => p.name === currentApiName);
+    return setting?.provider || 'deepseek';
+  };
 
-    setMessages(prev => [...prev, newMessage]);
+  const handleSend = async (content: string) => {
+    if (!content.trim() || isSending) return;
+
+    const newMessage: ChatMessage = { role: 'user', content };
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
     setIsSending(true);
 
     try {
-      const response: ChatResponse = await apiManager.sendMessage(provider, input, messages, {
-        pageContent,
-        pageTitle,
-      });
+      const response = await apiManager.sendMessage(
+        getCurrentProvider(),
+        content,
+        updatedMessages.slice(-MAX_MESSAGES),
+        { pageContent, pageTitle }
+      );
 
-      setMessages(prev => [...prev, response.message]);
-
-      if (messages.length >= MAX_MESSAGES) {
-        setMessages(prev => prev.slice(-MAX_MESSAGES));
+      if (response.error) {
+        setError(response.error);
+        return;
       }
+
+      setMessages([...updatedMessages, response.message]);
     } catch (error) {
       setError(handleError(error));
     } finally {
@@ -107,11 +127,6 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
   const handleClearChat = () => {
     setMessages([]);
     localStorage.removeItem('chatHistory');
-  };
-
-  const handleProviderChange = async (newProvider: ApiProvider) => {
-    setProvider(newProvider);
-    await setSelectedProvider(newProvider);
   };
 
   return (
@@ -129,7 +144,7 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
             key={index}
             elevation={0}
             sx={{
-              p: 2,
+              p: 1.5,
               backgroundColor: message.role === 'user' ? 'grey.100' : 'background.paper',
               borderRadius: 2,
               maxWidth: '80%',
@@ -139,17 +154,20 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
             <Typography 
               component="div" 
               sx={{ 
+                fontSize: '0.75rem',
                 '& p': { m: 0 },
                 '& pre': { 
-                  p: 1.5,
+                  p: 1,
                   borderRadius: 1,
                   backgroundColor: 'grey.100',
-                  overflowX: 'auto'
+                  overflowX: 'auto',
+                  fontSize: '0.75rem'
                 },
                 '& code': {
                   backgroundColor: 'grey.100',
                   p: 0.5,
-                  borderRadius: 0.5
+                  borderRadius: 0.5,
+                  fontSize: '0.75rem'
                 }
               }}
             >
@@ -170,12 +188,12 @@ export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps
       <Box>
         <ToolBar
           providers={providers}
-          selectedProvider={provider}
+          selectedProvider={currentApiName}
           onProviderChange={handleProviderChange}
           onClear={handleClearChat}
           onRefresh={onRefresh}
           disabled={messages.length === 0}
-          loading={isSending || isLoading}
+          loading={isLoading || isSending}
         />
         <ChatInput
           onSubmit={handleSend}

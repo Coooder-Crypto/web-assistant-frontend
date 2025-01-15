@@ -11,6 +11,10 @@ interface HeaderProps {
 export function Header({ pageTitle, onSettingsClick }: HeaderProps) {
   const [showSettings, setShowSettings] = useState(false);
 
+  const truncateTitle = (title: string) => {
+    return title.length > 30 ? title.substring(0, 30) + '...' : title;
+  };
+
   return (
     <>
       <AppBar 
@@ -24,19 +28,34 @@ export function Header({ pageTitle, onSettingsClick }: HeaderProps) {
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h6" component="h1" noWrap>
-            {pageTitle || 'Web Assistant'}
+        <Toolbar 
+          variant="dense"
+          sx={{ 
+            justifyContent: 'space-between',
+            minHeight: '48px'
+          }}
+        >
+          <Typography 
+            variant="subtitle1" 
+            component="h1" 
+            noWrap
+            sx={{ 
+              fontSize: '0.875rem',
+              fontWeight: 500
+            }}
+          >
+            {pageTitle ? truncateTitle(pageTitle) : 'Web Assistant'}
           </Typography>
           <Box>
             <IconButton
               onClick={() => setShowSettings(true)}
-              size="large"
+              size="small"
               edge="end"
               color="inherit"
               aria-label="settings"
+              sx={{ padding: '6px' }}
             >
-              <SettingsIcon />
+              <SettingsIcon fontSize="small" />
             </IconButton>
           </Box>
         </Toolbar>
