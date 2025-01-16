@@ -2,14 +2,10 @@ import React from 'react';
 import { Box, IconButton, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { ApiProvider } from '@src/types';
+import { ApiSettings } from '@src/types';
 
 interface ToolBarProps {
-  providers?: { 
-    name: string;
-    provider: ApiProvider;
-    model?: string;
-  }[];
+  providers?: ApiSettings[];
   selectedProvider?: string;
   onProviderChange?: (name: string) => Promise<void>;
   onClear: () => void;

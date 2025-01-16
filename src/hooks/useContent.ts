@@ -7,13 +7,6 @@ declare global {
     }
 }
 
-export interface ContentState {
-    pageTitle: string;
-    pageContent: string;
-    isLoading: boolean;
-    error: string | null;
-    success: string | null;
-}
 
 export function useContent() {
     const [pageTitle, setPageTitle] = useState<string>('');

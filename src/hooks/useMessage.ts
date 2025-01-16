@@ -3,6 +3,8 @@ import { ChatMessage, ApiProvider } from '@src/types';
 import { apiManager } from '../utils/api/index';
 import { handleError } from '../store/AppContext';
 
+const MAX_MESSAGES = 10;
+
 export interface MessageState {
     messages: ChatMessage[];
     isSending: boolean;
@@ -13,7 +15,6 @@ interface SendMessageOptions {
     provider: ApiProvider;
     pageTitle?: string;
     pageContent?: string;
-    maxMessages?: number;
 }
 
 export function useMessage() {
@@ -24,11 +25,6 @@ export function useMessage() {
     const sendMessage = async (content: string, options: SendMessageOptions) => {
         if (!content.trim() || isSending) return;
 
-        if (!options.provider) {
-            setError('Please select an API provider');
-            return;
-        }
-
         const newMessage: ChatMessage = { role: 'user', content };
         setMessages(prev => [...prev, newMessage]);
         setIsSending(true);
@@ -37,7 +33,7 @@ export function useMessage() {
             const response = await apiManager.sendMessage(
                 options.provider,
                 content,
-                messages.slice(-(options.maxMessages || 10)),
+                messages.slice(-MAX_MESSAGES),
                 { 
                     pageTitle: options.pageTitle,
                     pageContent: options.pageContent 

@@ -10,6 +10,8 @@ export interface ApiSettings {
   provider: ApiProvider;
   apiKey: string;
   model?: string;
+  organization?: string;
+  project?: string;
 }
 
 export interface ChatMessage {
@@ -25,6 +27,8 @@ export interface ChatContext {
 export interface ChatOptions {
   temperature?: number;
   maxTokens?: number;
+  organization?: string;
+  project?: string;
 }
 
 export interface ChatResponse {
@@ -36,6 +40,8 @@ export interface ApiConfig {
   apiKey: string;
   apiEndpoint?: string;
   model?: string;
+  organization?: string;
+  project?: string;
 }
 
 export interface ChatAPI {
