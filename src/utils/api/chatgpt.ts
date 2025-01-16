@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import type { ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse } from '@src/types';
 
 export class ChatGPTAPI implements ChatAPI {
-  private readonly model = 'gpt-3.5-turbo';
+  private readonly model = 'gpt-4o-mini';
 
   async sendMessage(
     content: string,
@@ -11,7 +11,10 @@ export class ChatGPTAPI implements ChatAPI {
     options: ChatOptions = {}
   ): Promise<ChatResponse> {
     try {
-      const client = new OpenAI();
+      const client = new OpenAI({
+        organization: options.organization,
+        project: options.project,
+      });
 
       const apiMessages: OpenAI.ChatCompletionMessageParam[] = [
         {
