@@ -10,7 +10,7 @@ interface ToolBarProps {
     provider: ApiProvider;
     model?: string;
   }[];
-  selectedProvider?: string;  // 使用 API 名称作为标识
+  selectedProvider?: string;
   onProviderChange?: (name: string) => Promise<void>;
   onClear: () => void;
   onRefresh: () => void;

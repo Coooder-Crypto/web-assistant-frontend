@@ -1,205 +1,269 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, Paper, IconButton, CircularProgress, Divider } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { apiManager } from '../utils/api/index';
-import { ChatMessage, ApiProvider, ChatResponse } from '@src/types';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { useApp } from '../store/AppContext';
-import { handleError } from '../store/AppContext';
-import { getSelectedProvider, setSelectedProvider, getApiSettings } from '../utils/storage';
-import { ChatInput } from './ChatInput';
-import { ToolBar } from './ToolBar';
+import { useState, useEffect, useCallback } from "react";
+import { Box } from "@mui/material";
+import { ApiProvider } from "@src/types";
+import {
+  getSelectedProvider,
+  setSelectedProvider,
+  getApiSettings,
+} from "../utils/storage";
+import { ChatInput } from "./ChatInput";
+import { ToolBar } from "./ToolBar";
+import ChatBoard from "./ChatBoard";
+import { Header } from "./Header";
+import { useContent } from "../hooks/useContent";
+import { useMessage } from "../hooks/useMessage";
+import Settings from "./Settings";
+import { useApp } from "@src/store/AppContext";
 
-interface ChatProps {
-  pageContent: string;
-  pageTitle: string;
-  isLoading: boolean;
-  onRefresh: () => void;
-}
 
-export function Chat({ pageContent, pageTitle, isLoading, onRefresh }: ChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const [currentApiName, setCurrentApiName] = useState<string>('');
-  const [providers, setProviders] = useState<{ name: string; provider: ApiProvider; model?: string }[]>([]);
-  const { setError } = useApp();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const MAX_MESSAGES = 10;
+export default function Chat() {
+  const [currentApiName, setCurrentApiName] = useState<string>("");
+  const [providers, setProviders] = useState<
+    { name: string; provider: ApiProvider; model?: string }[]
+  >([]);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const { setError, setSuccess } = useApp();
+
+  const setGlobalError = useCallback((error: string | null ) => {
+    setError(error);
+  }, [setError]);
+
+  const setGlobalSuccess = useCallback((message: string | null) => {
+    setSuccess(message);
+  }, [setSuccess]);
+
+  const {
+    pageTitle,
+    pageContent,
+    isLoading: isLoadingContent,
+    error: contentError,
+    success: contentSuccess,
+    fetchContent,
+  } = useContent();
+
+  const {
+    messages,
+    isSending,
+    error: messageError,
+    sendMessage,
+    clearMessages,
+    loadMessages,
+  } = useMessage();
+
+
+  useEffect(() => {
+    if (contentError) {
+      setGlobalError(contentError);
+    }
+  }, [contentError, setGlobalError]);
+
+  useEffect(() => {
+    if (messageError) {
+      setGlobalError(messageError);
+    }
+  }, [messageError, setGlobalError]);
+
+  useEffect(() => {
+    if (contentSuccess) {
+      setGlobalSuccess(contentSuccess);
+    }
+  }, [contentSuccess, setGlobalSuccess]);
 
   useEffect(() => {
     const loadInitialState = async () => {
       try {
-        const [savedMessages, savedProvider, apiSettings] = await Promise.all([
-          localStorage.getItem('chatHistory'),
+        const [savedProvider, apiSettings] = await Promise.all([
           getSelectedProvider(),
           getApiSettings(),
         ]);
 
-        if (savedMessages) {
-          try {
-            const parsed = JSON.parse(savedMessages);
-            setMessages(parsed);
-          } catch (e) {
-            console.error('Failed to parse saved messages:', e);
-            localStorage.removeItem('chatHistory');
-          }
-        }
-
-        const providerOptions = apiSettings.map(setting => ({
+        const providerOptions = apiSettings.map((setting) => ({
           name: setting.name,
           provider: setting.provider,
-          model: setting.model
+          model: setting.model,
         }));
+
+        if (providerOptions.length === 0) {
+          throw new Error(
+            "No API providers configured. Please check your settings."
+          );
+        }
+
         setProviders(providerOptions);
 
         if (savedProvider) {
-          const savedSetting = apiSettings.find(s => s.provider === savedProvider);
+          const savedSetting = apiSettings.find(
+            (s) => s.provider === savedProvider
+          );
           if (savedSetting) {
             setCurrentApiName(savedSetting.name);
+          } else {
+            setCurrentApiName(providerOptions[0].name);
+            await setSelectedProvider(providerOptions[0].provider);
           }
+        } else {
+          setCurrentApiName(providerOptions[0].name);
+          await setSelectedProvider(providerOptions[0].provider);
         }
       } catch (error) {
-        console.error('Error loading initial state:', error);
-        setError(handleError(error));
+        console.error("Failed to load initial state:", error);
+       // setGlobalError(error);
       }
     };
 
     loadInitialState();
-  }, [setError]);
+  }, [setGlobalError]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // useEffect(() => {
+  //   if (currentApiName) {
+  //     loadMessages().catch(error => {
+  //       console.error('Failed to load messages:', error);
+  //       setGlobalError(handleError(error));
+  //     });
+  //   }
+  // }, [currentApiName, loadMessages, setGlobalError]);
 
-  useEffect(() => {
-    localStorage.setItem('chatHistory', JSON.stringify(messages));
-  }, [messages]);
+  const handleSendMessage = async (content: string) => {
+    const currentProvider = providers.find(
+      (p) => p.name === currentApiName
+    )?.provider;
+    if (!currentProvider) return;
 
-  const handleProviderChange = async (name: string) => {
+    await sendMessage(content, {
+      provider: currentProvider,
+      pageContent,
+      maxMessages: 10,
+    });
+  };
+
+  const handleProviderChange = async (providerName: string) => {
     try {
-      const setting = providers.find(p => p.name === name);
-      if (setting) {
-        setCurrentApiName(name);
-        await setSelectedProvider(setting.provider);
+      const selectedProvider = providers.find((p) => p.name === providerName);
+      if (!selectedProvider) {
+        throw new Error("Selected provider not found");
       }
+
+      await setSelectedProvider(selectedProvider.provider);
+      setCurrentApiName(providerName);
+      setGlobalSuccess(`Successfully switched to ${providerName}`);
+
+      await clearMessages();
     } catch (error) {
-      console.error('Error changing provider:', error);
-      setError(handleError(error));
+    //  setGlobalError(error);
     }
   };
 
-  const getCurrentProvider = () => {
-    const setting = providers.find(p => p.name === currentApiName);
-    return setting?.provider || 'deepseek';
-  };
-
-  const handleSend = async (content: string) => {
-    if (!content.trim() || isSending) return;
-
-    const newMessage: ChatMessage = { role: 'user', content };
-    const updatedMessages = [...messages, newMessage];
-    setMessages(updatedMessages);
-    setIsSending(true);
-
+  // Handle settings saved
+  const handleSettingsSaved = async () => {
     try {
-      const response = await apiManager.sendMessage(
-        getCurrentProvider(),
-        content,
-        updatedMessages.slice(-MAX_MESSAGES),
-        { pageContent, pageTitle }
-      );
+      const [savedProvider, apiSettings] = await Promise.all([
+        getSelectedProvider(),
+        getApiSettings(),
+      ]);
 
-      if (response.error) {
-        setError(response.error);
-        return;
+      const providerOptions = apiSettings.map((setting) => ({
+        name: setting.name,
+        provider: setting.provider,
+        model: setting.model,
+      }));
+
+      setProviders(providerOptions);
+      setIsSettingsOpen(false);
+      setGlobalSuccess("Settings saved successfully");
+
+      // Update current provider if needed
+      if (savedProvider) {
+        const savedSetting = apiSettings.find(
+          (s) => s.provider === savedProvider
+        );
+        if (savedSetting) {
+          setCurrentApiName(savedSetting.name);
+        }
       }
-
-      setMessages([...updatedMessages, response.message]);
     } catch (error) {
-      setError(handleError(error));
-    } finally {
-      setIsSending(false);
+     // setGlobalError(error);
     }
   };
 
-  const handleClearChat = () => {
-    setMessages([]);
-    localStorage.removeItem('chatHistory');
+  const onSettingsClick = () => {
+    setIsSettingsOpen(true);
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ 
-        flex: 1, 
-        overflow: 'auto', 
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2
-      }}>
-        {messages.map((message, index) => (
-          <Paper
-            key={index}
-            elevation={0}
-            sx={{
-              p: 1.5,
-              backgroundColor: message.role === 'user' ? 'grey.100' : 'background.paper',
-              borderRadius: 2,
-              maxWidth: '80%',
-              alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start'
-            }}
-          >
-            <Typography 
-              component="div" 
-              sx={{ 
-                fontSize: '0.75rem',
-                '& p': { m: 0 },
-                '& pre': { 
-                  p: 1,
-                  borderRadius: 1,
-                  backgroundColor: 'grey.100',
-                  overflowX: 'auto',
-                  fontSize: '0.75rem'
-                },
-                '& code': {
-                  backgroundColor: 'grey.100',
-                  p: 0.5,
-                  borderRadius: 0.5,
-                  fontSize: '0.75rem'
-                }
-              }}
-            >
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {message.content}
-              </ReactMarkdown>
-            </Typography>
-          </Paper>
-        ))}
-        {isSending && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-            <CircularProgress size={24} />
-          </Box>
-        )}
-        <div ref={messagesEndRef} />
-      </Box>
+    <Box
+      sx={{
+        width: "100%",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        bgcolor: "background.default",
+      }}
+    >
+      <Header
+        pageTitle={pageTitle || "Web Assistant"}
+        onSettingsClick={onSettingsClick}
+      />
 
-      <Box>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        <ChatBoard messages={messages} isSending={isSending} />
         <ToolBar
           providers={providers}
           selectedProvider={currentApiName}
           onProviderChange={handleProviderChange}
-          onClear={handleClearChat}
-          onRefresh={onRefresh}
+          onClear={() => clearMessages()}
+          onRefresh={fetchContent}
           disabled={messages.length === 0}
-          loading={isLoading || isSending}
+          loading={isLoadingContent || isSending}
         />
-        <ChatInput
-          onSubmit={handleSend}
-          loading={isSending}
-        />
+        <ChatInput onSend={handleSendMessage} disabled={isSending} />
       </Box>
+
+      {isSettingsOpen && (
+        <>
+          <Box
+            sx={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              bgcolor: "rgba(0, 0, 0, 0.5)",
+              zIndex: 999,
+            }}
+            onClick={() => setIsSettingsOpen(false)}
+          />
+
+          <Box
+            sx={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "90%",
+              maxWidth: "500px",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              borderRadius: 2,
+              p: 3,
+              zIndex: 1000,
+            }}
+          >
+            <Settings
+              onSaved={handleSettingsSaved}
+              onClose={() => setIsSettingsOpen(false)}
+            />
+          </Box>
+        </>
+      )}
     </Box>
   );
 }

@@ -15,16 +15,12 @@ import {
   Paper,
   Stack,
   CircularProgress,
-  InputAdornment,
   Typography,
   Divider
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMoreOutlined';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/AddCircleOutline';
-import VisibilityIcon from '@mui/icons-material/VisibilityOutlined';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOffOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import { getApiSettings, setApiSettings, ApiSettings } from '../utils/storage';
 import { useApp } from '../store/AppContext';
@@ -35,7 +31,7 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-const Settings = ({ onSaved, onClose }: SettingsProps) => {
+export default function Settings({ onSaved, onClose }: SettingsProps){
   const [settings, setSettings] = useState<ApiSettings[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -370,4 +366,4 @@ const Settings = ({ onSaved, onClose }: SettingsProps) => {
   );
 };
 
-export default Settings;
+
