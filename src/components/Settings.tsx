@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   IconButton,
@@ -6,12 +6,19 @@ import {
   List,
   ListItem,
   ListItemText,
+  Button,
+  Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
-import { getApiSettings, setApiSettings } from "../utils/storage";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import {
+  getApiSettings,
+  setApiSettings,
+  clearAllStorage,
+} from "../utils/storage";
 import { API_PROVIDERS, ApiSettings } from "@src/types";
 import { useApp } from "@src/store/AppContext";
 import SettingEditor from "./SettingEditor";
@@ -35,6 +42,7 @@ export default function Settings({ onClose }: SettingsProps) {
   const loadSettings = async () => {
     try {
       const savedSettings = await getApiSettings();
+
       setSettings(savedSettings);
     } catch (error) {
       setError("Failed to load settings");
@@ -98,6 +106,17 @@ export default function Settings({ onClose }: SettingsProps) {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      await clearAllStorage();
+      setSettings([]);
+      setSuccess("All settings and cache cleared successfully");
+      window.location.reload();
+    } catch (error) {
+      setError("Failed to clear settings");
+    }
+  };
+
   return (
     <>
       <Box
@@ -107,8 +126,9 @@ export default function Settings({ onClose }: SettingsProps) {
           left: 0,
           width: "100%",
           height: "100%",
-          bgcolor: "rgba(0, 0, 0, 0.5)",
+          bgcolor: "rgba(0, 0, 0, 0.6)",
           zIndex: 999,
+          transition: "opacity 0.3s ease-in-out",
         }}
         onClick={onClose}
       />
@@ -122,46 +142,57 @@ export default function Settings({ onClose }: SettingsProps) {
           width: "90%",
           maxWidth: "500px",
           bgcolor: "background.paper",
-          boxShadow: 24,
-          borderRadius: 2,
+          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+          borderRadius: 3,
           p: 3,
           zIndex: 1000,
+          animation: "fadeIn 0.3s ease-in-out",
         }}
       >
-        <Box sx={{ position: "relative", pt: 2 }}>
-          <Box
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", userSelect: "none" }}
+          >
+            API Settings
+          </Typography>
+
+          <IconButton
+            onClick={onClose}
+            size="small"
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-              px: 2,
+              color: "grey.600",
+              "&:hover": { color: "grey.800" },
             }}
           >
-            <Typography variant="h6">API Settings</Typography>
-            <IconButton
-              onClick={onClose}
-              size="small"
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
+            <CloseIcon />
+          </IconButton>
+        </Box>
 
-          <List sx={{ width: "100%" }}>
-            {settings.map((setting) => (
+        <List sx={{ width: "100%" }}>
+          {settings.map((setting, index) => (
+            <React.Fragment key={`${setting.provider}-${setting.name}`}>
               <ListItem
-                key={`${setting.provider}-${setting.name}`}
+                sx={{
+                  borderRadius: 3,
+                  "&:hover": { bgcolor: "grey.100" },
+                }}
                 secondaryAction={
-                  <Box>
+                  <Box sx={{ display: "flex", gap: 1 }}>
                     <IconButton
                       edge="end"
                       aria-label="edit"
                       onClick={() => handleEdit(setting)}
+                      sx={{
+                        "&:hover": { color: "primary.dark" },
+                      }}
                     >
                       <EditIcon />
                     </IconButton>
@@ -169,6 +200,9 @@ export default function Settings({ onClose }: SettingsProps) {
                       edge="end"
                       aria-label="delete"
                       onClick={() => handleDelete(setting)}
+                      sx={{
+                        "&:hover": { color: "error.dark" },
+                      }}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -183,30 +217,49 @@ export default function Settings({ onClose }: SettingsProps) {
                   }
                 />
               </ListItem>
-            ))}
-            <ListItem
+              <Divider />
+            </React.Fragment>
+          ))}
+          <ListItem
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              mt: 2,
+              fontSize: "0.5rem",
+            }}
+          >
+            <Button
+              color="error"
+              startIcon={<DeleteForeverIcon />}
+              onClick={handleClearAll}
+              variant="outlined"
               sx={{
-                justifyContent: "center",
-                mt: 2,
+                fontSize: "0.75rem",
               }}
             >
-              <IconButton
-                color="primary"
-                aria-label="add api setting"
-                onClick={handleAdd}
-              >
-                <AddIcon />
-              </IconButton>
-            </ListItem>
-          </List>
+              {"Clear"}
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              aria-label="add api setting"
+              onClick={handleAdd}
+              startIcon={<AddIcon />}
+              sx={{
+                fontSize: "0.75rem",
+              }}
+            >
+              {"Create"}
+            </Button>
+          </ListItem>
+        </List>
 
-          <SettingEditor
-            open={editDialogOpen}
-            onClose={() => setEditDialogOpen(false)}
-            setting={editingSetting}
-            onSave={handleSaveSetting}
-          />
-        </Box>
+        <SettingEditor
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          setting={editingSetting}
+          onSave={handleSaveSetting}
+        />
       </Box>
     </>
   );
