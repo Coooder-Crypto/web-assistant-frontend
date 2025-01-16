@@ -1,20 +1,20 @@
-import { useRef, useEffect } from 'react';
-import { Box, Paper, CircularProgress } from '@mui/material';
-import { ChatMessage } from '@src/types';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import type { ChatMessage } from '@src/types'
+import { Box, CircularProgress, Paper } from '@mui/material'
+import { useEffect, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface ChatBoardProps {
-  messages: ChatMessage[];
-  isSending: boolean;
+  messages: ChatMessage[]
+  isSending: boolean
 }
 
 export default function ChatBoard({ messages, isSending }: ChatBoardProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   return (
     <Box
@@ -49,5 +49,5 @@ export default function ChatBoard({ messages, isSending }: ChatBoardProps) {
       )}
       <div ref={messagesEndRef} />
     </Box>
-  );
+  )
 }

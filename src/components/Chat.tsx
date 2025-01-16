@@ -1,25 +1,25 @@
-import { useState, useCallback, useEffect } from "react";
-import { Box } from "@mui/material";
-import { ApiSettings } from "@src/types";
+import type { ApiSettings } from '@src/types'
+import { Box } from '@mui/material'
+import { useApp } from '@src/store/AppContext'
+import { apiManager } from '@src/utils/api'
+import { useCallback, useEffect, useState } from 'react'
+import { useContent } from '../hooks/useContent'
+import { useMessage } from '../hooks/useMessage'
 import {
-  getSelectedSetting,
   getApiSettings,
+  getSelectedSetting,
   setSelectedSetting,
-} from "../utils/storage";
-import { ChatInput } from "./ChatInput";
-import { ToolBar } from "./ToolBar";
-import ChatBoard from "./ChatBoard";
-import { Header } from "./Header";
-import { useContent } from "../hooks/useContent";
-import { useMessage } from "../hooks/useMessage";
-import Settings from "./Settings";
-import { useApp } from "@src/store/AppContext";
-import { apiManager } from "@src/utils/api";
+} from '../utils/storage'
+import ChatBoard from './ChatBoard'
+import { ChatInput } from './ChatInput'
+import { Header } from './Header'
+import Settings from './Settings'
+import { ToolBar } from './ToolBar'
 
 export default function Chat() {
-  const [settings, setSettings] = useState<ApiSettings[]>([]);
-  const [setting, setSetting] = useState<ApiSettings | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<ApiSettings[]>([])
+  const [setting, setSetting] = useState<ApiSettings | null>(null)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   const {
     pageTitle,
@@ -27,151 +27,153 @@ export default function Chat() {
     error: contentError,
     fetchContent,
     isLoading,
-  } = useContent();
+  } = useContent()
   const {
     messages,
     isSending,
     error: messageError,
     sendMessage,
     clearMessages,
-  } = useMessage();
-  const { setError, setSuccess } = useApp();
+  } = useMessage()
+  const { setError, setSuccess } = useApp()
 
   const setGlobalError = useCallback(
     (error: any) => {
-      setError(error);
+      setError(error)
     },
-    [setError]
-  );
+    [setError],
+  )
 
   const setGlobalSuccess = useCallback(
     (message: string | null) => {
-      setSuccess(message);
+      setSuccess(message)
     },
-    [setSuccess]
-  );
+    [setSuccess],
+  )
 
   useEffect(() => {
     if (contentError) {
-      setGlobalError(contentError);
+      setGlobalError(contentError)
     }
-  }, [contentError, setGlobalError]);
+  }, [contentError, setGlobalError])
 
   useEffect(() => {
     if (messageError) {
-      setGlobalError(messageError);
+      setGlobalError(messageError)
     }
-  }, [messageError, setGlobalError]);
+  }, [messageError, setGlobalError])
 
   const loadInitialState = async () => {
     try {
       const [currentSetting, settings] = await Promise.all([
         getSelectedSetting(),
         getApiSettings(),
-      ]);
+      ])
 
       if (settings.length === 0) {
         throw new Error(
-          "No API providers configured. Please check your settings."
-        );
+          'No API providers configured. Please check your settings.',
+        )
       }
 
-      const settingToUse = currentSetting || settings[0];
+      const settingToUse = currentSetting || settings[0]
       await apiManager.initAPI(settingToUse.provider, {
         apiKey: settingToUse.apiKey,
         model: settingToUse.model,
         organization: settingToUse.organization,
         project: settingToUse.project,
-      });
-    
-      setSettings(settings);
-      setSetting(settingToUse);
-    } catch (error) {
-      setGlobalError(error);
+      })
+
+      setSettings(settings)
+      setSetting(settingToUse)
     }
-  };
+    catch (error) {
+      setGlobalError(error)
+    }
+  }
 
   useEffect(() => {
-    loadInitialState();
-  }, [setGlobalError]);
+    loadInitialState()
+  }, [setGlobalError])
 
   const handleSendMessage = async (content: string) => {
-    if (!setting) return;
+    if (!setting)
+      return
 
     await sendMessage(content, {
       provider: setting.provider,
       pageTitle,
       pageContent,
-    });
-  };
+    })
+  }
 
   const handleProviderChange = async (settingName: string) => {
     try {
-      const newSetting = settings.find((s) => s.name === settingName);
+      const newSetting = settings.find(s => s.name === settingName)
       if (!newSetting) {
-        throw new Error("Selected setting not found");
+        throw new Error('Selected setting not found')
       }
 
-      setSetting(newSetting);
-      await setSelectedSetting(newSetting);
+      setSetting(newSetting)
+      await setSelectedSetting(newSetting)
 
       await apiManager.initAPI(newSetting.provider, {
         apiKey: newSetting.apiKey,
         model: newSetting.model,
         organization: newSetting.organization,
         project: newSetting.project,
-      });
+      })
 
-      setGlobalSuccess(`Successfully switched to ${newSetting.name}`);
-    } catch (error) {
-      setGlobalError(error);
+      setGlobalSuccess(`Successfully switched to ${newSetting.name}`)
     }
-  };
+    catch (error) {
+      setGlobalError(error)
+    }
+  }
 
   const handleRefresh = () => {
     fetchContent()
       .then(() => {
-        setGlobalSuccess("Page content refreshed");
+        setGlobalSuccess('Page content refreshed')
       })
       .catch((error) => {
-        setGlobalError(error);
-      });
-  };
-  
-  const handleCloseSettings = () => {
-    setIsSettingsOpen(false);
-    loadInitialState();
+        setGlobalError(error)
+      })
   }
 
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false)
+    loadInitialState()
+  }
 
   return (
     <Box
       sx={{
-        width: "100%",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        bgcolor: "background.default",
+        width: '100%',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        bgcolor: 'background.default',
       }}
     >
       <Header
-        pageTitle={pageTitle || "Web Assistant"}
-        onSettingsClick={()=>setIsSettingsOpen(true)}
+        pageTitle={pageTitle || 'Web Assistant'}
+        onSettingsClick={() => setIsSettingsOpen(true)}
       />
 
       <Box
         sx={{
           flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
         <ChatBoard messages={messages} isSending={isSending} />
         <ToolBar
           providers={settings}
-          selectedProvider={setting?.name || ""}
+          selectedProvider={setting?.name || ''}
           onProviderChange={handleProviderChange}
           onClear={clearMessages}
           onRefresh={handleRefresh}
@@ -183,5 +185,5 @@ export default function Chat() {
 
       {isSettingsOpen && <Settings onClose={handleCloseSettings} />}
     </Box>
-  );
+  )
 }

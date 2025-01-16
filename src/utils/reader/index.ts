@@ -1,25 +1,25 @@
-import { Reader, PageContent, ExtractResult } from '@src/types';
-import { defaultReader } from './default';
-import { githubReader } from './github';
+import type { ExtractResult, Reader } from '@src/types'
+import { defaultReader } from './default'
+import { githubReader } from './github'
 
 // 定义读取器映射
 const readers: [string, Reader][] = [
   ['github.com', githubReader],
   // 在这里添加更多特定网站的读取器
-];
+]
 
 // 主要的读取函数
-export const reader = async (tab: chrome.tabs.Tab): Promise<ExtractResult> => {
+export async function reader(tab: chrome.tabs.Tab): Promise<ExtractResult> {
   if (!tab?.url) {
     return {
       success: false,
-      error: 'No tab URL provided'
-    };
+      error: 'No tab URL provided',
+    }
   }
 
   // 查找匹配的读取器
-  const matchedReader = readers.find(([pattern]) => tab.url?.includes(pattern));
-  const readPage = matchedReader ? matchedReader[1] : defaultReader;
+  const matchedReader = readers.find(([pattern]) => tab.url?.includes(pattern))
+  const readPage = matchedReader ? matchedReader[1] : defaultReader
 
-  return await readPage(tab);
-};
+  return await readPage(tab)
+}

@@ -1,17 +1,17 @@
-import React from 'react';
-import { Box, IconButton, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { ApiSettings } from '@src/types';
+import type { ApiSettings } from '@src/types'
+import DeleteIcon from '@mui/icons-material/Delete'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import { Box, FormControl, IconButton, InputLabel, MenuItem, Select } from '@mui/material'
+import React from 'react'
 
 interface ToolBarProps {
-  providers?: ApiSettings[];
-  selectedProvider?: string;
-  onProviderChange?: (name: string) => Promise<void>;
-  onClear: () => void;
-  onRefresh: () => void;
-  disabled: boolean;
-  loading: boolean;
+  providers?: ApiSettings[]
+  selectedProvider?: string
+  onProviderChange?: (name: string) => Promise<void>
+  onClear: () => void
+  onRefresh: () => void
+  disabled: boolean
+  loading: boolean
 }
 
 export const ToolBar: React.FC<ToolBarProps> = ({
@@ -21,29 +21,33 @@ export const ToolBar: React.FC<ToolBarProps> = ({
   onClear,
   onRefresh,
   disabled,
-  loading
+  loading,
 }) => {
   return (
-    <Box sx={{ 
+    <Box sx={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       px: 2,
       py: 1,
       borderBottom: 1,
-      borderColor: 'divider'
-    }}>
+      borderColor: 'divider',
+    }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <InputLabel sx={{ 
-          color: 'text.primary', 
+        <InputLabel sx={{
+          color: 'text.primary',
           fontSize: '0.75rem',
           transform: 'none',
-          position: 'static'
-        }}>Model:</InputLabel>
+          position: 'static',
+        }}
+        >
+          Model:
+        </InputLabel>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <Select
             value={selectedProvider || ''}
-            onChange={(e) => onProviderChange?.(e.target.value)}
+            onChange={e => onProviderChange?.(e.target.value)}
             disabled={loading}
             size="small"
             MenuProps={{
@@ -58,20 +62,20 @@ export const ToolBar: React.FC<ToolBarProps> = ({
               sx: {
                 '& .MuiPaper-root': {
                   mb: 0.5,
-                  boxShadow: '0 -2px 8px rgba(0,0,0,0.15)'
-                }
-              }
+                  boxShadow: '0 -2px 8px rgba(0,0,0,0.15)',
+                },
+              },
             }}
-            sx={{ 
-              height: '32px',
-              fontSize: '0.75rem',
+            sx={{
+              'height': '32px',
+              'fontSize': '0.75rem',
               '.MuiSelect-select': {
-                padding: '4px 8px'
-              }
+                padding: '4px 8px',
+              },
             }}
           >
-            {providers?.map((provider) => (
-              <MenuItem 
+            {providers?.map(provider => (
+              <MenuItem
                 key={provider.name}
                 value={provider.name}
                 sx={{ fontSize: '0.75rem' }}
@@ -95,9 +99,9 @@ export const ToolBar: React.FC<ToolBarProps> = ({
           disabled={loading}
           size="small"
         >
-          <RefreshIcon fontSize="inherit"/>
+          <RefreshIcon fontSize="inherit" />
         </IconButton>
       </Box>
     </Box>
-  );
-};
+  )
+}

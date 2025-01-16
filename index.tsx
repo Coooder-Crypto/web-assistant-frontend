@@ -1,9 +1,9 @@
+import App from '@src/App'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from '@src/App'
 import './index.css'
 
-const root = document.getElementById('root');
+const root = document.getElementById('root')
 console.log(root)
 
 if (root) {
@@ -13,6 +13,6 @@ if (root) {
       <React.Suspense fallback={<div>Loading...</div>}>
         <App />
       </React.Suspense>
-    </React.StrictMode>
-  );
+    </React.StrictMode>,
+  )
 }
