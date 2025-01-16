@@ -25,6 +25,8 @@ export interface ChatContext {
 export interface ChatOptions {
   temperature?: number;
   maxTokens?: number;
+  organization?: string;
+  project?: string;
 }
 
 export interface ChatResponse {

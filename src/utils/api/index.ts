@@ -2,7 +2,6 @@ import type { ApiProvider, ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatR
 import { DeepseekAPI } from './deepseek';
 import { ChatGPTAPI } from './chatgpt';
 
-
 class APIManager {
   private static instance: APIManager;
   private apis: Map<ApiProvider, ChatAPI>;
@@ -50,16 +49,4 @@ class APIManager {
   }
 }
 
-// Export a singleton instance
 export const apiManager = APIManager.getInstance();
-
-// Export a convenient function for sending messages
-export const sendMessage = async (
-  provider: ApiProvider,
-  content: string,
-  messages?: ChatMessage[],
-  context?: ChatContext,
-  options?: ChatOptions
-): Promise<ChatResponse> => {
-  return apiManager.sendMessage(provider, content, messages, context, options);
-};
