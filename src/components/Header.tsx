@@ -1,18 +1,18 @@
-import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
-import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from '@mui/icons-material/Settings'
+import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material'
 
 interface HeaderProps {
-  pageTitle: string;
-  onSettingsClick: () => void;
+  pageTitle: string
+  onSettingsClick: () => void
 }
 
 export function Header({ pageTitle, onSettingsClick }: HeaderProps) {
   const truncateTitle = (title: string) => {
-    return title.length > 30 ? title.substring(0, 30) + '...' : title;
-  };
+    return title.length > 30 ? `${title.substring(0, 30)}...` : title
+  }
 
   return (
-    <AppBar position="static" color='inherit'>
+    <AppBar position="static" color="inherit">
       <Toolbar>
         <Typography
           variant="subtitle1"
@@ -21,7 +21,7 @@ export function Header({ pageTitle, onSettingsClick }: HeaderProps) {
             flexGrow: 1,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
           }}
         >
           {truncateTitle(pageTitle)}
@@ -39,5 +39,5 @@ export function Header({ pageTitle, onSettingsClick }: HeaderProps) {
         </Box>
       </Toolbar>
     </AppBar>
-  );
+  )
 }
