@@ -15,20 +15,16 @@ export const githubReader: Reader = async (tab: chrome.tabs.Tab) => {
             .trim()
         }
 
-        // 获取页面标题
         const title = document.title || ''
 
-        // 获取 GitHub 特定内容
         let content = ''
 
         try {
-          // Get README content if present
           const readme = document.querySelector('#readme')
           if (readme) {
             content = readme.textContent || ''
           }
 
-          // Get file content if present
           if (!content.trim()) {
             const fileContent = document.querySelector('.blob-wrapper, .Box-body')
             if (fileContent) {
@@ -36,7 +32,6 @@ export const githubReader: Reader = async (tab: chrome.tabs.Tab) => {
             }
           }
 
-          // Get issue/PR content if present
           if (!content.trim()) {
             const issueContent = document.querySelector('.js-comment-container')
             if (issueContent) {
@@ -44,12 +39,10 @@ export const githubReader: Reader = async (tab: chrome.tabs.Tab) => {
             }
           }
 
-          // 如果还是没有内容，尝试获取整个页面内容
           if (!content.trim() && document.body) {
             content = document.body.textContent || ''
           }
 
-          // 清理并限制内容长度
           content = cleanText(content)
           const maxLength = 4000
           if (content.length > maxLength) {

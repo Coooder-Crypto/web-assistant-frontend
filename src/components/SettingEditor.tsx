@@ -15,7 +15,7 @@ interface SettingEditorProps {
 export default function SettingEditor({ open, onClose, setting, onSave }: SettingEditorProps) {
   const [editedSetting, setEditedSetting] = useState<ApiSettings>({
     name: '',
-    provider: 'deepseek',
+    provider: '',
     apiKey: '',
     ...setting,
   })
@@ -23,7 +23,7 @@ export default function SettingEditor({ open, onClose, setting, onSave }: Settin
   useEffect(() => {
     setEditedSetting({
       name: '',
-      provider: 'deepseek',
+      provider: '',
       apiKey: '',
       ...setting,
     })
@@ -76,7 +76,7 @@ export default function SettingEditor({ open, onClose, setting, onSave }: Settin
             </Select>
           </FormControl>
           <TextField
-            label="API Key"
+            label="API Key (Right-click to paste)"
             value={editedSetting.apiKey}
             onChange={e => setEditedSetting(prev => ({ ...prev, apiKey: e.target.value }))}
             fullWidth
