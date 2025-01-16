@@ -53,7 +53,7 @@ export default function SettingEditor({ open, onClose, setting, onSave }: Settin
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+          <Stack spacing={2} sx={{ mt: 1,fontSize: '0.75rem' }}>
             <TextField
               label="Name"
               value={editedSetting.name}
