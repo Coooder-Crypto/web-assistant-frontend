@@ -1,21 +1,70 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { Alert, Snackbar, AlertColor } from '@mui/material';
+
+interface Notification {
+  message: string;
+  type: AlertColor;
+}
 
 interface AppState {
-  error: string | null;
-  setError: (error: string | null) => void;
-  success: string | null;
+  setError: (error: any) => void;
   setSuccess: (message: string | null) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [notification, setNotification] = useState<Notification | null>(null);
+
+  const handleError = (error: any): string => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === "string") {
+      return error;
+    }
+    return "An unexpected error occurred";
+  };
+
+  const setError = useCallback((error: any) => {
+    if (error) {
+      setNotification({ message: handleError(error), type: 'error' });
+    } else {
+      setNotification(null);
+    }
+  }, []);
+
+  const setSuccess = useCallback((success: string | null ) => {
+    if (success) {
+      setNotification({ message: success, type: 'success' });
+    } else {
+      setNotification(null);
+    }
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setNotification(null);
+  }, []);
 
   return (
-    <AppContext.Provider value={{ error, setError, success, setSuccess }}>
+    <AppContext.Provider value={{ setError, setSuccess }}>
       {children}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={notification?.type === 'error' ? 6000 : 3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {notification ? (
+          <Alert 
+            onClose={handleClose} 
+            severity={notification?.type || 'info'}
+            sx={{ width: '100%' }}
+          >
+            {notification?.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </AppContext.Provider>
   );
 }
