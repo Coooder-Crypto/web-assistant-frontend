@@ -7,7 +7,6 @@
 - 🎯 **Smart Context Understanding**: Automatically captures and understands the content of your current webpage
 - 💬 **Natural Conversation**: Chat naturally about the page content with AI-powered responses
 - 🎨 **Beautiful UI**: Clean, modern interface with smooth animations and markdown support
-- ⚡ **Quick Access**: One keyboard shortcut (MacCtrl + T) to open the chat panel
 - 🌙 **Dark Mode Support**: Easy on your eyes during those late-night browsing sessions
 
 ## 🚀 Getting Started
@@ -19,16 +18,16 @@
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/chat-with-web.git
+git clone https://github.com/Coooder-Crypto/web-assistant-frontend.git
 
 # Navigate to the project directory
-cd chat-with-web
+cd web-assistant-frontend
 
 # Install dependencies
 pnpm install
 
 # Build the extension
-pnpm build
+pnpm run build
 ```
 
 ### Loading the Extension
@@ -38,17 +37,35 @@ pnpm build
 
 ## 🎮 Usage
 1. Visit any webpage
-2. Press `MacCtrl + T` (Mac) or click the extension icon to open the chat panel
+2. click the extension icon to open the chat panel
 3. Start asking questions about the page content!
 
 ## 🛠️ Development
 ```bash
-# Start development server
-pnpm dev
-
 # Build for production
-pnpm build
+pnpm run build
+
+# Start development server
+pnpm run dev
 ```
+
+## 🔌 API Support
+Currently supports:
+- Deepseek API
+- OpenAI API
+
+## 🤝 Contributing
+We welcome contributions! Here are some areas you can help with:
+- Integrate more AI APIs
+- Add more webpage content readers for different websites
+- Create and optimize prompts for better interactions
+- Performance optimization (code splitting, caching strategies, etc.)
+- UI/UX improvements (styles, animations, responsive design)
+- Bug fixes and feature enhancements
+
+**As a frontend novice, I would greatly appreciate guidance and suggestions from experienced developers. Your expertise and insights are invaluable to making this project better!**
+
+Please feel free to submit pull requests or open issues for discussion.
 
 ---
 
@@ -61,7 +78,6 @@ pnpm build
 - 🎯 **智能上下文理解**：自动捕获并理解当前网页的内容
 - 💬 **自然对话**：通过AI支持，实现与页面内容的自然交谈
 - 🎨 **精美界面**：简洁现代的界面设计，流畅的动画效果和Markdown支持
-- ⚡ **快速访问**：一键快捷键（MacCtrl + T）打开聊天面板
 - 🌙 **深色模式**：让你的深夜浏览更加护眼
 
 ## 🚀 开始使用
@@ -73,16 +89,16 @@ pnpm build
 ### 安装步骤
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/chat-with-web.git
+git clone https://github.com/Coooder-Crypto/web-assistant-frontend.git
 
 # 进入项目目录
-cd chat-with-web
+cd web-assistant-frontend
 
 # 安装依赖
 pnpm install
 
 # 构建扩展
-pnpm build
+pnpm run build
 ```
 
 ### 加载扩展
@@ -92,17 +108,35 @@ pnpm build
 
 ## 🎮 使用方法
 1. 访问任意网页
-2. 按下 `MacCtrl + T`（Mac）或点击扩展图标打开聊天面板
+2. 点击扩展图标打开聊天面板
 3. 开始询问关于页面内容的问题吧！
 
 ## 🛠️ 开发相关
 ```bash
-# 启动开发服务器
-pnpm dev
-
 # 生产环境构建
-pnpm build
+pnpm run build
+
+# 启动开发服务器
+pnpm run dev
 ```
+
+## 🔌 API 支持
+目前支持：
+- Deepseek API
+- OpenAI API
+
+## 🤝 参与贡献
+我们欢迎各种形式的贡献！以下是一些你可以参与的方向：
+- 接入更多的 AI API
+- 为不同的网站添加更多的网页内容读取适配
+- 创建和优化 prompt 以提供更好的交互体验
+- 性能优化（代码分割、缓存策略等）
+- UI/UX 改进（样式、动画、响应式设计）
+- 修复 bug 和功能增强
+
+**作为一个前端菜鸟，非常希望能得到经验丰富的开发者的指导和建议。您的专业知识和见解对提升这个项目的质量非常宝贵！**
+
+欢迎提交 Pull Request 或开启 Issue 进行讨论。
 
 ## 🎉 玩得开心！
 记得给项目点个星标⭐️，如果你觉得它很有用的话！

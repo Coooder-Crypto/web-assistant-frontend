@@ -81,7 +81,6 @@ export default function Settings({ onClose }: SettingsProps) {
     try {
       let newSettings: ApiSettings[]
       if (editingSetting) {
-        // Edit existing setting
         newSettings = settings.map(s =>
           s.name === editingSetting.name
           && s.provider === editingSetting.provider
@@ -90,7 +89,6 @@ export default function Settings({ onClose }: SettingsProps) {
         )
       }
       else {
-        // Add new setting
         if (settings.some(s => s.name === newSetting.name)) {
           setError('A setting with this name already exists')
           return

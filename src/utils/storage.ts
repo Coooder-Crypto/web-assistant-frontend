@@ -4,10 +4,8 @@ const API_KEY_PREFIX = 'api_key'
 const SETTINGS_KEY = 'api_settings'
 const SELECTED_SETTING_KEY = 'selected_setting'
 
-// 检查是否在扩展环境中
 const isExtensionEnvironment = typeof chrome !== 'undefined' && chrome.storage
 
-// 用于非扩展环境的本地存储
 const localStorageAPI = {
   get: async (key: string) => {
     const value = localStorage.getItem(key)
@@ -23,10 +21,8 @@ const localStorageAPI = {
   },
 }
 
-// 获取合适的存储API
 const storage = isExtensionEnvironment ? chrome.storage.local : localStorageAPI
 
-// 迁移旧的 API key
 async function migrateLegacyApiKey(): Promise<void> {
   try {
     const result = await storage.get(API_KEY_PREFIX)

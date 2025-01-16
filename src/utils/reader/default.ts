@@ -8,7 +8,6 @@ export const defaultReader: Reader = async (tab: chrome.tabs.Tab) => {
     const result = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        // 清理文本内容的函数
         const cleanText = (text: string): string => {
           return text
             .replace(/\s+/g, ' ')
@@ -16,20 +15,16 @@ export const defaultReader: Reader = async (tab: chrome.tabs.Tab) => {
             .trim()
         }
 
-        // 获取页面标题
         const title = document.title || ''
 
-        // 获取主要内容
         let content = ''
 
         try {
-          // First try to get content from article or main element
           const article = document.querySelector('article, main')
           if (article) {
             content = article.textContent || ''
           }
 
-          // If no content found in article/main, try other common content elements
           if (!content.trim()) {
             const contentElements = document.querySelectorAll('.content, #content, .article, #article')
             for (const element of contentElements) {
@@ -38,13 +33,11 @@ export const defaultReader: Reader = async (tab: chrome.tabs.Tab) => {
                 break
             }
 
-            // If still no content, use body text
             if (!content.trim() && document.body) {
               content = document.body.textContent || ''
             }
           }
 
-          // 清理并限制内容长度
           content = cleanText(content)
           const maxLength = 4000
           if (content.length > maxLength) {
