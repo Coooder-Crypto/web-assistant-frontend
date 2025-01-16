@@ -1,4 +1,4 @@
-import type { ApiProvider, ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse } from '@src/types/api';
+import type { ApiProvider, ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse, ApiConfig } from '@src/types/api';
 import { DeepseekAPI } from './deepseek';
 import { ChatGPTAPI } from './chatgpt';
 
@@ -17,24 +17,27 @@ class APIManager {
     return APIManager.instance;
   }
 
-  private getAPI(provider: ApiProvider): ChatAPI {
+  public getAPI(provider: ApiProvider): ChatAPI {
     let api = this.apis.get(provider);
-    
     if (!api) {
-      switch (provider) {
-        case 'deepseek':
-          api = new DeepseekAPI();
-          break;
-        case 'openai':
-          api = new ChatGPTAPI();
-          break;
-        default:
-          throw new Error(`Unsupported API provider: ${provider}`);
-      }
-      this.apis.set(provider, api);
+      throw new Error('API not initialized. Please set API key first.');
     }
-    
     return api;
+  }
+
+  public async initAPI(provider: ApiProvider, config: ApiConfig): Promise<void> {
+    let api: ChatAPI;
+    switch (provider) {
+      case 'openai':
+        api = new ChatGPTAPI(config);
+        break;
+      case 'deepseek':
+        api = new DeepseekAPI(config);
+        break;
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+    this.apis.set(provider, api);
   }
 
   public async sendMessage(

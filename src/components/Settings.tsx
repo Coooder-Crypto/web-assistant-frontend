@@ -6,12 +6,14 @@ import {
   List,
   ListItem,
   ListItemText,
+  Button,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
-import { getApiSettings, setApiSettings } from "../utils/storage";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { getApiSettings, setApiSettings, clearAllStorage } from "../utils/storage";
 import { API_PROVIDERS, ApiSettings } from "@src/types";
 import { useApp } from "@src/store/AppContext";
 import SettingEditor from "./SettingEditor";
@@ -35,6 +37,7 @@ export default function Settings({ onClose }: SettingsProps) {
   const loadSettings = async () => {
     try {
       const savedSettings = await getApiSettings();
+      
       setSettings(savedSettings);
     } catch (error) {
       setError("Failed to load settings");
@@ -98,6 +101,17 @@ export default function Settings({ onClose }: SettingsProps) {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      await clearAllStorage();
+      setSettings([]);
+      setSuccess("All settings and cache cleared successfully");
+      window.location.reload();
+    } catch (error) {
+      setError("Failed to clear settings");
+    }
+  };
+
   return (
     <>
       <Box
@@ -128,17 +142,18 @@ export default function Settings({ onClose }: SettingsProps) {
           zIndex: 1000,
         }}
       >
-        <Box sx={{ position: "relative", pt: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-              px: 2,
-            }}
-          >
-            <Typography variant="h6">API Settings</Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Typography variant="h6">API Settings</Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<DeleteForeverIcon />}
+              onClick={handleClearAll}
+              sx={{ mr: 2 }}
+            >
+              Clear All
+            </Button>
             <IconButton
               onClick={onClose}
               size="small"
@@ -151,62 +166,62 @@ export default function Settings({ onClose }: SettingsProps) {
               <CloseIcon />
             </IconButton>
           </Box>
-
-          <List sx={{ width: "100%" }}>
-            {settings.map((setting) => (
-              <ListItem
-                key={`${setting.provider}-${setting.name}`}
-                secondaryAction={
-                  <Box>
-                    <IconButton
-                      edge="end"
-                      aria-label="edit"
-                      onClick={() => handleEdit(setting)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleDelete(setting)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                }
-              >
-                <ListItemText
-                  primary={setting.name}
-                  secondary={
-                    API_PROVIDERS.find((p) => p.value === setting.provider)
-                      ?.label || setting.provider
-                  }
-                />
-              </ListItem>
-            ))}
-            <ListItem
-              sx={{
-                justifyContent: "center",
-                mt: 2,
-              }}
-            >
-              <IconButton
-                color="primary"
-                aria-label="add api setting"
-                onClick={handleAdd}
-              >
-                <AddIcon />
-              </IconButton>
-            </ListItem>
-          </List>
-
-          <SettingEditor
-            open={editDialogOpen}
-            onClose={() => setEditDialogOpen(false)}
-            setting={editingSetting}
-            onSave={handleSaveSetting}
-          />
         </Box>
+
+        <List sx={{ width: "100%" }}>
+          {settings.map((setting) => (
+            <ListItem
+              key={`${setting.provider}-${setting.name}`}
+              secondaryAction={
+                <Box>
+                  <IconButton
+                    edge="end"
+                    aria-label="edit"
+                    onClick={() => handleEdit(setting)}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => handleDelete(setting)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              }
+            >
+              <ListItemText
+                primary={setting.name}
+                secondary={
+                  API_PROVIDERS.find((p) => p.value === setting.provider)
+                    ?.label || setting.provider
+                }
+              />
+            </ListItem>
+          ))}
+          <ListItem
+            sx={{
+              justifyContent: "center",
+              mt: 2,
+            }}
+          >
+            <IconButton
+              color="primary"
+              aria-label="add api setting"
+              onClick={handleAdd}
+            >
+              <AddIcon />
+            </IconButton>
+          </ListItem>
+        </List>
+
+        <SettingEditor
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          setting={editingSetting}
+          onSave={handleSaveSetting}
+        />
       </Box>
     </>
   );

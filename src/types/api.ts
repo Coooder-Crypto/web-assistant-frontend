@@ -10,6 +10,8 @@ export interface ApiSettings {
   provider: ApiProvider;
   apiKey: string;
   model?: string;
+  organization?: string;
+  project?: string;
 }
 
 export interface ChatMessage {
@@ -38,6 +40,8 @@ export interface ApiConfig {
   apiKey: string;
   apiEndpoint?: string;
   model?: string;
+  organization?: string;
+  project?: string;
 }
 
 export interface ChatAPI {

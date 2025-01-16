@@ -1,8 +1,14 @@
 import OpenAI from 'openai';
-import type { ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse } from '@src/types';
+import type { ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse } from '@src/types/api';
+import type { ApiConfig } from '@src/types/api';
 
 export class ChatGPTAPI implements ChatAPI {
   private readonly model = 'gpt-4o-mini';
+  private apiKey: string = '';
+
+  constructor(config: ApiConfig) {
+    this.apiKey = config.apiKey;
+  }
 
   async sendMessage(
     content: string,
@@ -12,8 +18,10 @@ export class ChatGPTAPI implements ChatAPI {
   ): Promise<ChatResponse> {
     try {
       const client = new OpenAI({
+        apiKey: this.apiKey,
         organization: options.organization,
         project: options.project,
+        dangerouslyAllowBrowser: true
       });
 
       const apiMessages: OpenAI.ChatCompletionMessageParam[] = [

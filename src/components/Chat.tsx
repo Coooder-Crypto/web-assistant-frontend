@@ -14,6 +14,7 @@ import { useContent } from "../hooks/useContent";
 import { useMessage } from "../hooks/useMessage";
 import Settings from "./Settings";
 import { useApp } from "@src/store/AppContext";
+import { apiManager } from "@src/utils/api";
 
 export default function Chat() {
   const [settings, setSettings] = useState<ApiSettings[]>([]);
@@ -62,28 +63,35 @@ export default function Chat() {
     }
   }, [messageError, setGlobalError]);
 
-  useEffect(() => {
-    const loadInitialState = async () => {
-      try {
-        const [currentSetting, settings] = await Promise.all([
-          getSelectedSetting(),
-          getApiSettings(),
-        ]);
+  const loadInitialState = async () => {
+    try {
+      const [currentSetting, settings] = await Promise.all([
+        getSelectedSetting(),
+        getApiSettings(),
+      ]);
 
-        if (settings.length === 0) {
-          throw new Error(
-            "No API providers configured. Please check your settings."
-          );
-        }
-
-        setSettings(settings);
-        setSetting(currentSetting || settings[0]);
-      } catch (error) {
-        console.error("Failed to load initial state:", error);
-        setGlobalError(error);
+      if (settings.length === 0) {
+        throw new Error(
+          "No API providers configured. Please check your settings."
+        );
       }
-    };
 
+      const settingToUse = currentSetting || settings[0];
+      await apiManager.initAPI(settingToUse.provider, {
+        apiKey: settingToUse.apiKey,
+        model: settingToUse.model,
+        organization: settingToUse.organization,
+        project: settingToUse.project,
+      });
+    
+      setSettings(settings);
+      setSetting(settingToUse);
+    } catch (error) {
+      setGlobalError(error);
+    }
+  };
+
+  useEffect(() => {
     loadInitialState();
   }, [setGlobalError]);
 
@@ -107,14 +115,17 @@ export default function Chat() {
       setSetting(newSetting);
       await setSelectedSetting(newSetting);
 
+      await apiManager.initAPI(newSetting.provider, {
+        apiKey: newSetting.apiKey,
+        model: newSetting.model,
+        organization: newSetting.organization,
+        project: newSetting.project,
+      });
+
       setGlobalSuccess(`Successfully switched to ${newSetting.name}`);
     } catch (error) {
       setGlobalError(error);
     }
-  };
-
-  const onSettingsClick = () => {
-    setIsSettingsOpen(true);
   };
 
   const handleRefresh = () => {
@@ -126,6 +137,12 @@ export default function Chat() {
         setGlobalError(error);
       });
   };
+  
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
+    loadInitialState();
+  }
+
 
   return (
     <Box
@@ -140,7 +157,7 @@ export default function Chat() {
     >
       <Header
         pageTitle={pageTitle || "Web Assistant"}
-        onSettingsClick={onSettingsClick}
+        onSettingsClick={()=>setIsSettingsOpen(true)}
       />
 
       <Box
@@ -164,7 +181,7 @@ export default function Chat() {
         <ChatInput onSend={handleSendMessage} disabled={isSending} />
       </Box>
 
-      {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} />}
+      {isSettingsOpen && <Settings onClose={handleCloseSettings} />}
     </Box>
   );
 }

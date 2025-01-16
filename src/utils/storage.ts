@@ -91,3 +91,11 @@ export async function getSelectedSetting(): Promise<ApiSettings | null> {
 export async function setSelectedSetting(setting: ApiSettings): Promise<void> {
   await storage.set({ [SELECTED_SETTING_KEY]: JSON.stringify(setting) });
 }
+
+export async function clearAllStorage(): Promise<void> {
+  if (isExtensionEnvironment) {
+    await chrome.storage.local.clear();
+  } else {
+    localStorage.clear();
+  }
+}
