@@ -1,20 +1,19 @@
 import OpenAI from 'openai';
-import { getSelectedSetting } from '../storage';
-import type { ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse } from '@src/types';
+import type { ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse, ApiConfig } from '@src/types';
 
 export class DeepseekAPI implements ChatAPI {
   private client: OpenAI | null = null;
   private readonly model = 'deepseek-coder';
+  private config: ApiConfig;
+
+  constructor(config: ApiConfig) {
+    this.config = config;
+  }
 
   private async getClient(): Promise<OpenAI> {
     if (!this.client) {
-      const setting = await getSelectedSetting();
-      if (!setting || setting.provider !== 'deepseek') {
-        throw new Error('No valid Deepseek API setting found');
-      }
-
       this.client = new OpenAI({
-        apiKey: setting.apiKey,
+        apiKey: this.config.apiKey,
         baseURL: 'https://api.deepseek.com/v1',
         dangerouslyAllowBrowser: true
       });

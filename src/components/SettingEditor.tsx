@@ -82,6 +82,24 @@ export default function SettingEditor({ open, onClose, setting, onSave }: Settin
               multiline
               rows={3}
             />
+            {editedSetting.provider === 'openai' && (
+              <>
+                <TextField
+                  label="Organization ID (Optional)"
+                  value={editedSetting.organization || ''}
+                  onChange={(e) => setEditedSetting(prev => ({ ...prev, organization: e.target.value }))}
+                  fullWidth
+                  helperText="Your OpenAI organization ID (if you belong to multiple organizations)"
+                />
+                <TextField
+                  label="Project ID (Optional)"
+                  value={editedSetting.project || ''}
+                  onChange={(e) => setEditedSetting(prev => ({ ...prev, project: e.target.value }))}
+                  fullWidth
+                  helperText="Your OpenAI project ID (recommended for improved security)"
+                />
+              </>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -93,4 +111,3 @@ export default function SettingEditor({ open, onClose, setting, onSave }: Settin
       </Dialog>
     );
   }
-  
