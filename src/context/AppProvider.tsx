@@ -1,16 +1,12 @@
 import type { AlertColor } from '@mui/material'
+import type { AppState } from '@src/types/app'
 import type { ReactNode } from 'react'
 import { Alert, Snackbar } from '@mui/material'
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useMemo, useState } from 'react'
 
 interface Notification {
   message: string
   type: AlertColor
-}
-
-interface AppState {
-  setError: (error: any) => void
-  setSuccess: (message: string | null) => void
 }
 
 const AppContext = createContext<AppState | undefined>(undefined)
@@ -50,8 +46,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setNotification(null)
   }, [])
 
+  const value = useMemo(() => ({ setError, setSuccess }), [setError, setSuccess])
+
   return (
-    <AppContext.Provider value={{ setError, setSuccess }}>
+    <AppContext.Provider value={value}>
       {children}
       <Snackbar
         open={!!notification}
@@ -73,22 +71,4 @@ export function AppProvider({ children }: { children: ReactNode }) {
       </Snackbar>
     </AppContext.Provider>
   )
-}
-
-export function useApp() {
-  const context = useContext(AppContext)
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider')
-  }
-  return context
-}
-
-export function handleError(error: any): string {
-  if (typeof error === 'string')
-    return error
-  if (error instanceof Error)
-    return error.message
-  if (error && typeof error === 'object' && 'message' in error)
-    return error.message
-  return 'An unexpected error occurred'
 }

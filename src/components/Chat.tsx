@@ -1,6 +1,6 @@
 import type { ApiSettings } from '@src/types'
 import { Box } from '@mui/material'
-import { useApp } from '@src/store/AppContext'
+import { useApp } from '@src/hooks/useApp'
 import { apiManager } from '@src/utils/api'
 import { useCallback, useEffect, useState } from 'react'
 import { useContent } from '../hooks/useContent'
@@ -63,7 +63,7 @@ export default function Chat() {
     }
   }, [messageError, setGlobalError])
 
-  const loadInitialState = async () => {
+  const loadInitialState = useCallback(async () => {
     try {
       const [currentSetting, settings] = await Promise.all([
         getSelectedSetting(),
@@ -90,11 +90,11 @@ export default function Chat() {
     catch (error) {
       setGlobalError(error)
     }
-  }
+  }, [setGlobalError])
 
   useEffect(() => {
     loadInitialState()
-  }, [setGlobalError])
+  }, [loadInitialState])
 
   const handleSendMessage = async (content: string) => {
     if (!setting)

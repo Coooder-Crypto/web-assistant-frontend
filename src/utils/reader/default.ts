@@ -1,6 +1,6 @@
-import type { Reader, ReaderOptions } from '@src/types'
+import type { Reader } from '@src/types'
 
-export const defaultReader: Reader = async (tab: chrome.tabs.Tab, options?: ReaderOptions) => {
+export const defaultReader: Reader = async (tab: chrome.tabs.Tab) => {
   if (!tab.id)
     return { success: false, error: 'No tab ID' }
 
@@ -40,7 +40,7 @@ export const defaultReader: Reader = async (tab: chrome.tabs.Tab, options?: Read
 
             // If still no content, use body text
             if (!content.trim() && document.body) {
-              content = document.body.innerText || ''
+              content = document.body.textContent || ''
             }
           }
 

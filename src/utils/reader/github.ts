@@ -1,6 +1,6 @@
-import type { Reader, ReaderOptions } from '@src/types'
+import type { Reader } from '@src/types'
 
-export const githubReader: Reader = async (tab: chrome.tabs.Tab, options?: ReaderOptions) => {
+export const githubReader: Reader = async (tab: chrome.tabs.Tab) => {
   if (!tab.id)
     return { success: false, error: 'No tab ID' }
 
@@ -46,7 +46,7 @@ export const githubReader: Reader = async (tab: chrome.tabs.Tab, options?: Reade
 
           // 如果还是没有内容，尝试获取整个页面内容
           if (!content.trim() && document.body) {
-            content = document.body.innerText || ''
+            content = document.body.textContent || ''
           }
 
           // 清理并限制内容长度

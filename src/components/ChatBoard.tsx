@@ -27,9 +27,9 @@ export default function ChatBoard({ messages, isSending }: ChatBoardProps) {
         gap: 2,
       }}
     >
-      {messages.map((message, index) => (
+      {messages.map(message => (
         <Paper
-          key={index}
+          key={message.content}
           elevation={1}
           sx={{
             p: 2,

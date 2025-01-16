@@ -14,9 +14,9 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
-import { useApp } from '@src/store/AppContext'
+import { useApp } from '@src/hooks/useApp'
 import { API_PROVIDERS } from '@src/types'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   clearAllStorage,
   getApiSettings,
@@ -36,20 +36,20 @@ export default function Settings({ onClose }: SettingsProps) {
   >()
   const { setError, setSuccess } = useApp()
 
-  useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const savedSettings = await getApiSettings()
 
       setSettings(savedSettings)
     }
     catch (error) {
-      setError('Failed to load settings')
+      setError(error)
     }
-  }
+  }, [setError])
+
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
 
   const handleEdit = (setting: ApiSettings) => {
     setEditingSetting(setting)
@@ -73,7 +73,7 @@ export default function Settings({ onClose }: SettingsProps) {
       setSuccess('Setting deleted successfully')
     }
     catch (error) {
-      setError('Failed to delete setting')
+      setError(error)
     }
   }
 
@@ -107,7 +107,7 @@ export default function Settings({ onClose }: SettingsProps) {
       )
     }
     catch (error) {
-      setError('Failed to save setting')
+      setError(error)
     }
   }
 
@@ -119,7 +119,7 @@ export default function Settings({ onClose }: SettingsProps) {
       window.location.reload()
     }
     catch (error) {
-      setError('Failed to clear settings')
+      setError(error)
     }
   }
 
@@ -183,7 +183,7 @@ export default function Settings({ onClose }: SettingsProps) {
         </Box>
 
         <List sx={{ width: '100%' }}>
-          {settings.map((setting, index) => (
+          {settings.map(setting => (
             <React.Fragment key={`${setting.provider}-${setting.name}`}>
               <ListItem
                 sx={{

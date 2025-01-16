@@ -1,6 +1,5 @@
 import type { ApiProvider, ChatMessage } from '@src/types'
 import { useState } from 'react'
-import { handleError } from '../store/AppContext'
 import { apiManager } from '../utils/api/index'
 
 const MAX_MESSAGES = 10
@@ -20,7 +19,7 @@ interface SendMessageOptions {
 export function useMessage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isSending, setIsSending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<any>(null)
 
   const sendMessage = async (content: string, options: SendMessageOptions) => {
     if (!content.trim() || isSending)
@@ -46,7 +45,7 @@ export function useMessage() {
     }
     catch (error) {
       console.error('Failed to send message:', error)
-      setError(handleError(error))
+      setError(error)
     }
     finally {
       setIsSending(false)

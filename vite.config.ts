@@ -7,7 +7,7 @@ export default defineConfig({
 
   build: {
     // TODO: temporary fix for "chunk size too large" error
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000,
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
