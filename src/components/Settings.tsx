@@ -1,192 +1,270 @@
-import React, { useEffect, useState } from 'react';
-import { getApiSettings, setApiSettings, ApiSettings } from '../utils/storage';
-import { useApp } from '../store/AppContext';
-import { ApiProvider } from '@src/types';
+import type { ApiSettings } from '@src/types'
+import AddIcon from '@mui/icons-material/AddCircleOutline'
+import CloseIcon from '@mui/icons-material/Close'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import DeleteIcon from '@mui/icons-material/DeleteOutline'
+import EditIcon from '@mui/icons-material/Edit'
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from '@mui/material'
+import { useApp } from '@src/hooks/useApp'
+import { API_PROVIDERS } from '@src/types'
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+  clearAllStorage,
+  getApiSettings,
+  setApiSettings,
+} from '../utils/storage'
+import SettingEditor from './SettingEditor'
 
 interface SettingsProps {
-  onSaved?: () => void;
-  onClose: () => void;
+  onClose: () => void
 }
 
-const API_PROVIDERS: { label: string; value: ApiProvider }[] = [
-  { label: 'Deepseek', value: 'deepseek' },
-  { label: 'ChatGPT', value: 'openai' },
-  { label: 'Claude', value: 'anthropic' },
-];
+export default function Settings({ onClose }: SettingsProps) {
+  const [settings, setSettings] = useState<ApiSettings[]>([])
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingSetting, setEditingSetting] = useState<
+    ApiSettings | undefined
+  >()
+  const { setError, setSuccess } = useApp()
 
-export function Settings({ onSaved, onClose }: SettingsProps) {
-  const [settings, setSettings] = useState<ApiSettings[]>([]);
-  const [editingKey, setEditingKey] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const { setError, setSuccess } = useApp();
+  const loadSettings = useCallback(async () => {
+    try {
+      const savedSettings = await getApiSettings()
+
+      setSettings(savedSettings)
+    }
+    catch (error) {
+      setError(error)
+    }
+  }, [setError])
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    loadSettings()
+  }, [loadSettings])
 
-  const loadSettings = async () => {
+  const handleEdit = (setting: ApiSettings) => {
+    setEditingSetting(setting)
+    setEditDialogOpen(true)
+  }
+
+  const handleAdd = () => {
+    setEditingSetting(undefined)
+    setEditDialogOpen(true)
+  }
+
+  const handleDelete = async (settingToDelete: ApiSettings) => {
     try {
-      setIsLoading(true);
-      const savedSettings = await getApiSettings();
-      
-      // 如果没有设置，添加一个默认的 Deepseek 设置
-      if (savedSettings.length === 0) {
-        setSettings([{ name: 'Deepseek', provider: 'deepseek', apiKey: '' }]);
-      } else {
-        setSettings(savedSettings);
+      const newSettings = settings.filter(
+        s =>
+          s.name !== settingToDelete.name
+          || s.provider !== settingToDelete.provider,
+      )
+      await setApiSettings(newSettings)
+      setSettings(newSettings)
+      setSuccess('Setting deleted successfully')
+    }
+    catch (error) {
+      setError(error)
+    }
+  }
+
+  const handleSaveSetting = async (newSetting: ApiSettings) => {
+    try {
+      let newSettings: ApiSettings[]
+      if (editingSetting) {
+        newSettings = settings.map(s =>
+          s.name === editingSetting.name
+          && s.provider === editingSetting.provider
+            ? newSetting
+            : s,
+        )
       }
-    } catch (error) {
-      setError('Failed to load API settings');
-      console.error('Failed to load settings:', error);
-    } finally {
-      setIsLoading(false);
+      else {
+        if (settings.some(s => s.name === newSetting.name)) {
+          setError('A setting with this name already exists')
+          return
+        }
+        newSettings = [...settings, newSetting]
+      }
+
+      await setApiSettings(newSettings)
+      setSettings(newSettings)
+      setSuccess(
+        editingSetting
+          ? 'Setting updated successfully'
+          : 'Setting added successfully',
+      )
     }
-  };
-
-  const handleAddApi = () => {
-    setSettings([
-      ...settings,
-      { name: '', provider: 'deepseek', apiKey: '' },
-    ]);
-  };
-
-  const handleRemoveApi = (index: number) => {
-    const newSettings = [...settings];
-    newSettings.splice(index, 1);
-    setSettings(newSettings);
-  };
-
-  const handleUpdateSetting = (index: number, field: keyof ApiSettings, value: string) => {
-    const newSettings = [...settings];
-    newSettings[index] = { ...newSettings[index], [field]: value };
-    setSettings(newSettings);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // 验证所有必填字段
-    const invalidSetting = settings.find(
-      setting => !setting.name.trim() || !setting.apiKey.trim()
-    );
-    
-    if (invalidSetting) {
-      setError('Please fill in all required fields (Name and API Key)');
-      return;
+    catch (error) {
+      setError(error)
     }
+  }
 
+  const handleClearAll = async () => {
     try {
-      await setApiSettings(settings);
-      setSuccess('API settings saved successfully!');
-      onSaved?.();
-    } catch (error) {
-      setError('Failed to save API settings');
-      console.error('Failed to save settings:', error);
+      await clearAllStorage()
+      setSettings([])
+      setSuccess('All settings and cache cleared successfully')
+      window.location.reload()
     }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center w-full h-full min-h-screen-sm bg-background dark:bg-background-dark">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    catch (error) {
+      setError(error)
+    }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-screen-sm bg-background dark:bg-background-dark">
-      <div className="w-full max-w-popup px-popup-padding">
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-text dark:text-text-dark mb-2">
-              API Settings
-            </h2>
-            <p className="text-text-secondary dark:text-text-dark-secondary">
-              Configure your API providers
-            </p>
-          </div>
-          <button
+    <>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          bgcolor: 'rgba(0, 0, 0, 0.6)',
+          zIndex: 999,
+          transition: 'opacity 0.3s ease-in-out',
+        }}
+        onClick={onClose}
+      />
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: '500px',
+          bgcolor: 'background.paper',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.2)',
+          borderRadius: 3,
+          p: 3,
+          zIndex: 1000,
+          animation: 'fadeIn 0.3s ease-in-out',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 'bold', userSelect: 'none' }}
+          >
+            API Settings
+          </Typography>
+
+          <IconButton
             onClick={onClose}
-            className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-            title="Close"
+            size="small"
+            sx={{
+              'color': 'grey.600',
+              '&:hover': { color: 'grey.800' },
+            }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+            <CloseIcon />
+          </IconButton>
+        </Box>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {settings.map((setting, index) => (
-            <div key={index} className="bg-white dark:bg-background-dark rounded-lg shadow-md p-4 space-y-4">
-              <div className="flex justify-between items-center">
-                <input
-                  type="text"
-                  value={setting.name}
-                  onChange={(e) => handleUpdateSetting(index, 'name', e.target.value)}
-                  placeholder="API Name *"
-                  className="flex-1 p-2 text-text dark:text-text-dark bg-transparent border-2 border-border dark:border-border-dark rounded-lg focus:outline-none focus:border-primary dark:focus:border-primary-light"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveApi(index)}
-                  className="ml-2 p-2 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
-                  disabled={settings.length === 1}
-                  title={settings.length === 1 ? "Can't remove the last API provider" : "Remove this API provider"}
-                >
-                  Remove
-                </button>
-              </div>
-
-              <select
-                value={setting.provider}
-                onChange={(e) => handleUpdateSetting(index, 'provider', e.target.value as ApiProvider)}
-                className="w-full p-2 text-text dark:text-text-dark bg-transparent border-2 border-border dark:border-border-dark rounded-lg focus:outline-none focus:border-primary dark:focus:border-primary-light"
+        <List sx={{ width: '100%' }}>
+          {settings.map(setting => (
+            <React.Fragment key={`${setting.provider}-${setting.name}`}>
+              <ListItem
+                sx={{
+                  'borderRadius': 3,
+                  '&:hover': { bgcolor: 'grey.100' },
+                }}
+                secondaryAction={(
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      edge="end"
+                      aria-label="edit"
+                      onClick={() => handleEdit(setting)}
+                      sx={{
+                        '&:hover': { color: 'primary.dark' },
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDelete(setting)}
+                      sx={{
+                        '&:hover': { color: 'error.dark' },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                )}
               >
-                {API_PROVIDERS.map((provider) => (
-                  <option key={provider.value} value={provider.value}>
-                    {provider.label}
-                  </option>
-                ))}
-              </select>
-
-              <div className="relative">
-                <input
-                  type={editingKey === `${index}` ? 'text' : 'password'}
-                  value={setting.apiKey}
-                  onChange={(e) => handleUpdateSetting(index, 'apiKey', e.target.value)}
-                  placeholder="API Key *"
-                  className="w-full p-2 text-text dark:text-text-dark bg-transparent border-2 border-border dark:border-border-dark rounded-lg focus:outline-none focus:border-primary dark:focus:border-primary-light font-mono"
-                  required
+                <ListItemText
+                  primary={setting.name}
+                  secondary={
+                    API_PROVIDERS.find(p => p.value === setting.provider)
+                      ?.label || setting.provider
+                  }
                 />
-                <button
-                  type="button"
-                  onClick={() => setEditingKey(editingKey === `${index}` ? '' : `${index}`)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-secondary dark:text-text-dark-secondary hover:text-text dark:hover:text-text-dark"
-                >
-                  {editingKey === `${index}` ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </div>
+              </ListItem>
+              <Divider />
+            </React.Fragment>
           ))}
-
-          <button
-            type="button"
-            onClick={handleAddApi}
-            className="w-full py-3 px-4 border-2 border-dashed border-border dark:border-border-dark hover:border-primary dark:hover:border-primary-light text-text-secondary dark:text-text-dark-secondary rounded-lg transition-colors focus:outline-none"
+          <ListItem
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              mt: 2,
+              fontSize: '0.5rem',
+            }}
           >
-            + Add API Provider
-          </button>
+            <Button
+              color="error"
+              startIcon={<DeleteForeverIcon />}
+              onClick={handleClearAll}
+              variant="outlined"
+              sx={{
+                fontSize: '0.75rem',
+              }}
+            >
+              Clear
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              aria-label="add api setting"
+              onClick={handleAdd}
+              startIcon={<AddIcon />}
+              sx={{
+                fontSize: '0.75rem',
+              }}
+            >
+              Create
+            </Button>
+          </ListItem>
+        </List>
 
-          <button
-            type="submit"
-            className="w-full py-3 px-4 bg-primary hover:bg-primary-hover dark:bg-primary-light dark:hover:bg-primary text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-primary-light"
-          >
-            Save Settings
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+        <SettingEditor
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          setting={editingSetting}
+          onSave={handleSaveSetting}
+        />
+      </Box>
+    </>
+  )
 }
