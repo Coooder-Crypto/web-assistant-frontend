@@ -7,7 +7,7 @@ interface Notification {
 }
 
 interface AppState {
-  setError: (error: string | null) => void;
+  setError: (error: any) => void;
   setSuccess: (message: string | null) => void;
 }
 
@@ -26,7 +26,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return "An unexpected error occurred";
   };
 
-  const setError = useCallback((error: string | null) => {
+  const setError = useCallback((error: any) => {
     if (error) {
       setNotification({ message: handleError(error), type: 'error' });
     } else {

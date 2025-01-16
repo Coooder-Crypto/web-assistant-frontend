@@ -1,4 +1,16 @@
-export type ApiProvider = 'deepseek' | 'openai' | 'anthropic';
+export type ApiProvider = 'deepseek' | 'openai' ;
+
+export const API_PROVIDERS = [
+  { label: 'Deepseek', value: 'deepseek' },
+  { label: 'ChatGPT', value: 'openai' },
+] as const;
+
+export interface ApiSettings {
+  name: string;
+  provider: ApiProvider;
+  apiKey: string;
+  model?: string;
+}
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';

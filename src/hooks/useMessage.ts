@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ChatMessage, ApiProvider } from '@src/types';
 import { apiManager } from '../utils/api/index';
 import { handleError } from '../store/AppContext';
@@ -56,26 +56,7 @@ export function useMessage() {
 
     const clearMessages = () => {
         setMessages([]);
-        localStorage.removeItem('chatHistory');
     };
-
-    const loadMessages = () => {
-        try {
-            const savedMessages = localStorage.getItem('chatHistory');
-            if (savedMessages) {
-                const parsed = JSON.parse(savedMessages);
-                setMessages(parsed);
-            }
-        } catch (e) {
-            console.error('Failed to parse saved messages:', e);
-            localStorage.removeItem('chatHistory');
-        }
-    };
-
-    // Save messages to localStorage whenever they change
-    useEffect(() => {
-        localStorage.setItem('chatHistory', JSON.stringify(messages));
-    }, [messages]);
 
     return {
         messages,
@@ -83,6 +64,5 @@ export function useMessage() {
         error,
         sendMessage,
         clearMessages,
-        loadMessages,
     };
 }

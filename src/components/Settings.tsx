@@ -22,9 +22,9 @@ import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import { getApiSettings, setApiSettings, ApiSettings } from '../utils/storage';
+import { getApiSettings, setApiSettings } from '../utils/storage';
 import { useApp } from '../store/AppContext';
-import { ApiProvider, API_PROVIDERS } from '@src/utils/api';
+import { API_PROVIDERS, ApiProvider, ApiSettings } from '@src/types';
 
 interface SettingsProps {
   onSaved?: () => void;

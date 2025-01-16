@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Box } from "@mui/material";
-import { ApiProvider } from "@src/types";
+import { ApiSettings } from "@src/types";
 import {
-  getSelectedProvider,
-  setSelectedProvider,
+  getSelectedSetting,
   getApiSettings,
 } from "../utils/storage";
 import { ChatInput } from "./ChatInput";
@@ -15,42 +14,22 @@ import { useMessage } from "../hooks/useMessage";
 import Settings from "./Settings";
 import { useApp } from "@src/store/AppContext";
 
-
 export default function Chat() {
-  const [currentApiName, setCurrentApiName] = useState<string>("");
-  const [providers, setProviders] = useState<
-    { name: string; provider: ApiProvider; model?: string }[]
-  >([]);
+  const [apiSettings, setApiSettings] = useState<ApiSettings[]>([]);
+  const [selectedSetting, setSelectedSetting] = useState<ApiSettings | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  const { pageTitle, pageContent, error: contentError, fetchContent, isLoading } = useContent();
+  const { messages, isSending, error: messageError, sendMessage, clearMessages } = useMessage();
   const { setError, setSuccess } = useApp();
 
-  const setGlobalError = useCallback((error: string | null ) => {
+  const setGlobalError = useCallback((error: any) => {
     setError(error);
   }, [setError]);
 
   const setGlobalSuccess = useCallback((message: string | null) => {
     setSuccess(message);
   }, [setSuccess]);
-
-  const {
-    pageTitle,
-    pageContent,
-    isLoading: isLoadingContent,
-    error: contentError,
-    success: contentSuccess,
-    fetchContent,
-  } = useContent();
-
-  const {
-    messages,
-    isSending,
-    error: messageError,
-    sendMessage,
-    clearMessages,
-    loadMessages,
-  } = useMessage();
-
 
   useEffect(() => {
     if (contentError) {
@@ -65,124 +44,97 @@ export default function Chat() {
   }, [messageError, setGlobalError]);
 
   useEffect(() => {
-    if (contentSuccess) {
-      setGlobalSuccess(contentSuccess);
-    }
-  }, [contentSuccess, setGlobalSuccess]);
-
-  useEffect(() => {
     const loadInitialState = async () => {
       try {
-        const [savedProvider, apiSettings] = await Promise.all([
-          getSelectedProvider(),
+        const [currentSetting, settings] = await Promise.all([
+          getSelectedSetting(),
           getApiSettings(),
         ]);
 
-        const providerOptions = apiSettings.map((setting) => ({
-          name: setting.name,
-          provider: setting.provider,
-          model: setting.model,
-        }));
-
-        if (providerOptions.length === 0) {
+        if (settings.length === 0) {
           throw new Error(
             "No API providers configured. Please check your settings."
           );
         }
 
-        setProviders(providerOptions);
-
-        if (savedProvider) {
-          const savedSetting = apiSettings.find(
-            (s) => s.provider === savedProvider
+        setApiSettings(settings);
+        
+        if (currentSetting) {
+          const settingStillExists = settings.some(
+            s => s.name === currentSetting.name && s.provider === currentSetting.provider
           );
-          if (savedSetting) {
-            setCurrentApiName(savedSetting.name);
+          if (settingStillExists) {
+            setSelectedSetting(currentSetting);
           } else {
-            setCurrentApiName(providerOptions[0].name);
-            await setSelectedProvider(providerOptions[0].provider);
+            const newSelected = settings[0];
+            await setSelectedSetting(newSelected);
+            setSelectedSetting(newSelected);
           }
         } else {
-          setCurrentApiName(providerOptions[0].name);
-          await setSelectedProvider(providerOptions[0].provider);
+          const newSelected = settings[0];
+          await setSelectedSetting(newSelected);
+          setSelectedSetting(newSelected);
         }
       } catch (error) {
         console.error("Failed to load initial state:", error);
-       // setGlobalError(error);
+        setGlobalError(error);
       }
     };
 
     loadInitialState();
   }, [setGlobalError]);
 
-  // useEffect(() => {
-  //   if (currentApiName) {
-  //     loadMessages().catch(error => {
-  //       console.error('Failed to load messages:', error);
-  //       setGlobalError(handleError(error));
-  //     });
-  //   }
-  // }, [currentApiName, loadMessages, setGlobalError]);
-
   const handleSendMessage = async (content: string) => {
-    const currentProvider = providers.find(
-      (p) => p.name === currentApiName
-    )?.provider;
-    if (!currentProvider) return;
+    if (!selectedSetting) return;
 
     await sendMessage(content, {
-      provider: currentProvider,
+      provider: selectedSetting.provider,
+      pageTitle,
       pageContent,
       maxMessages: 10,
     });
   };
 
-  const handleProviderChange = async (providerName: string) => {
+  const handleProviderChange = async (settingName: string) => {
     try {
-      const selectedProvider = providers.find((p) => p.name === providerName);
-      if (!selectedProvider) {
-        throw new Error("Selected provider not found");
+      const newSetting = apiSettings.find((s) => s.name === settingName);
+      if (!newSetting) {
+        throw new Error("Selected setting not found");
       }
 
-      await setSelectedProvider(selectedProvider.provider);
-      setCurrentApiName(providerName);
-      setGlobalSuccess(`Successfully switched to ${providerName}`);
-
-      await clearMessages();
+      await setSelectedSetting(newSetting);
+      setSelectedSetting(newSetting);
+      setGlobalSuccess(`Successfully switched to ${newSetting.name}`);
+      clearMessages();
     } catch (error) {
-    //  setGlobalError(error);
+      setGlobalError(error);
     }
   };
 
-  // Handle settings saved
   const handleSettingsSaved = async () => {
     try {
-      const [savedProvider, apiSettings] = await Promise.all([
-        getSelectedProvider(),
+      const [currentSetting, settings] = await Promise.all([
+        getSelectedSetting(),
         getApiSettings(),
       ]);
 
-      const providerOptions = apiSettings.map((setting) => ({
-        name: setting.name,
-        provider: setting.provider,
-        model: setting.model,
-      }));
-
-      setProviders(providerOptions);
-      setIsSettingsOpen(false);
+      setApiSettings(settings);
       setGlobalSuccess("Settings saved successfully");
 
-      // Update current provider if needed
-      if (savedProvider) {
-        const savedSetting = apiSettings.find(
-          (s) => s.provider === savedProvider
+      if (currentSetting) {
+        const settingStillExists = settings.some(
+          s => s.name === currentSetting.name && s.provider === currentSetting.provider
         );
-        if (savedSetting) {
-          setCurrentApiName(savedSetting.name);
+        if (settingStillExists) {
+          setSelectedSetting(currentSetting);
+        } else {
+          const newSelected = settings[0];
+          await setSelectedSetting(newSelected);
+          setSelectedSetting(newSelected);
         }
       }
     } catch (error) {
-     // setGlobalError(error);
+      setGlobalError(error);
     }
   };
 
@@ -216,13 +168,13 @@ export default function Chat() {
       >
         <ChatBoard messages={messages} isSending={isSending} />
         <ToolBar
-          providers={providers}
-          selectedProvider={currentApiName}
+          providers={apiSettings}
+          selectedProvider={selectedSetting?.name || ""}
           onProviderChange={handleProviderChange}
-          onClear={() => clearMessages()}
+          onClear={clearMessages}
           onRefresh={fetchContent}
           disabled={messages.length === 0}
-          loading={isLoadingContent || isSending}
+          loading={isLoading || isSending}
         />
         <ChatInput onSend={handleSendMessage} disabled={isSending} />
       </Box>

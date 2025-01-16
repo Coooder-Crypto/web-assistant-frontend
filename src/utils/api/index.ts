@@ -2,13 +2,6 @@ import type { ApiProvider, ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatR
 import { DeepseekAPI } from './deepseek';
 import { ChatGPTAPI } from './chatgpt';
 
-export type { ApiProvider, ChatMessage, ChatContext, ChatOptions, ChatResponse };
-
-export const API_PROVIDERS = [
-  { label: 'Deepseek', value: 'deepseek' },
-  { label: 'ChatGPT', value: 'openai' },
-
-] as const;
 
 class APIManager {
   private static instance: APIManager;
@@ -36,8 +29,6 @@ class APIManager {
         case 'openai':
           api = new ChatGPTAPI();
           break;
-        case 'anthropic':
-          throw new Error('Anthropic API not implemented yet');
         default:
           throw new Error(`Unsupported API provider: ${provider}`);
       }
