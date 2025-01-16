@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import type { ChatAPI, ChatMessage, ChatContext, ChatOptions, ChatResponse, ApiConfig } from '@src/types';
+import defaultPrompts from './prompt/default.json';
 
 export class DeepseekAPI implements ChatAPI {
   private client: OpenAI | null = null;
@@ -33,16 +34,18 @@ export class DeepseekAPI implements ChatAPI {
       const apiMessages: OpenAI.ChatCompletionMessageParam[] = [
         {
           role: 'system',
-          content: 'You are a helpful assistant. You have access to the current page content and title to provide context-aware responses.',
+          content: defaultPrompts.system.default,
         },
       ];
 
       if (context.pageTitle || context.pageContent) {
+        const contextMessage = defaultPrompts.system.contextAware
+          .replace('{{pageTitle}}', context.pageTitle || 'N/A')
+          .replace('{{pageContent}}', context.pageContent || 'N/A');
+        
         apiMessages.push({
           role: 'system',
-          content: `Current page title: ${context.pageTitle || 'N/A'}\nPage content: ${
-            context.pageContent || 'N/A'
-          }`,
+          content: contextMessage,
         });
       }
 

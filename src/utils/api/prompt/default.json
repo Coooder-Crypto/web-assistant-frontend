@@ -1,0 +1,22 @@
+{
+  "system": {
+    "default": "You are a helpful assistant. You have access to the current page content and title to provide context-aware responses.",
+    "code": "You are an expert programmer assistant. You help users write, review, and debug code. You provide clear, concise, and practical solutions.",
+    "contextAware": "Current page title: {{pageTitle}}\nPage content: {{pageContent}}",
+    "translation": "You are a professional translator. Maintain the original meaning while adapting to the target language's cultural context.",
+    "summarization": "You are a summarization expert. Provide clear, concise summaries while retaining key information.",
+    "analysis": "You are a data analysis expert. Help users understand and interpret information effectively."
+  },
+  "user": {
+    "codeReview": "Please review this code and provide suggestions for improvement:\n{{code}}",
+    "bugFix": "There's an issue with this code:\n{{code}}\nError: {{error}}\nPlease help identify and fix the problem.",
+    "documentation": "Please help document this code:\n{{code}}",
+    "explanation": "Please explain how this code works:\n{{code}}"
+  },
+  "assistant": {
+    "codeReview": "Here's my review of your code with suggestions for improvement:",
+    "bugFix": "I've analyzed your code and found the following issues:",
+    "documentation": "Here's the documentation for your code:",
+    "explanation": "Let me explain how this code works:"
+  }
+}

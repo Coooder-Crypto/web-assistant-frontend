@@ -28,7 +28,8 @@ export const ToolBar: React.FC<ToolBarProps> = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      px: 1,
+      px: 2,
+      py: 1,
       borderBottom: 1,
       borderColor: 'divider'
     }}>

@@ -10,6 +10,7 @@ interface ChatInputProps {
 
 export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   const [input, setInput] = useState("");
+  const [isComposing, setIsComposing] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent, content?: string) => {
     e.preventDefault();
@@ -23,10 +24,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !isComposing) {
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true); 
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false); 
   };
 
   return (
@@ -50,6 +59,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart} 
+        onCompositionEnd={handleCompositionEnd} 
         placeholder="Type your message..."
         disabled={disabled}
         sx={{
@@ -60,10 +71,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
       />
       <Stack
         direction="column"
-        spacing={0}
-        justifyContent="space-between" 
+        spacing={1} 
+        justifyContent="space-between"
         sx={{
-          height: "100%", 
+          height: "100%",
         }}
       >
         <IconButton
@@ -73,7 +84,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           size="small"
           title="Summarize page"
           sx={{
-            height: "50%", 
+            width: 40, 
+            height: 40, 
+            borderRadius: 1, 
           }}
         >
           <AutoFixHighIcon fontSize="small" />
@@ -84,7 +97,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           color="primary"
           size="small"
           sx={{
-            height: "50%", 
+            width: 40, 
+            height: 40, 
+            borderRadius: 1, 
           }}
         >
           <SendIcon fontSize="small" />

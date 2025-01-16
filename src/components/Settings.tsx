@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   IconButton,
@@ -7,13 +7,18 @@ import {
   ListItem,
   ListItemText,
   Button,
+  Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { getApiSettings, setApiSettings, clearAllStorage } from "../utils/storage";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import {
+  getApiSettings,
+  setApiSettings,
+  clearAllStorage,
+} from "../utils/storage";
 import { API_PROVIDERS, ApiSettings } from "@src/types";
 import { useApp } from "@src/store/AppContext";
 import SettingEditor from "./SettingEditor";
@@ -37,7 +42,7 @@ export default function Settings({ onClose }: SettingsProps) {
   const loadSettings = async () => {
     try {
       const savedSettings = await getApiSettings();
-      
+
       setSettings(savedSettings);
     } catch (error) {
       setError("Failed to load settings");
@@ -121,8 +126,9 @@ export default function Settings({ onClose }: SettingsProps) {
           left: 0,
           width: "100%",
           height: "100%",
-          bgcolor: "rgba(0, 0, 0, 0.5)",
+          bgcolor: "rgba(0, 0, 0, 0.6)",
           zIndex: 999,
+          transition: "opacity 0.3s ease-in-out",
         }}
         onClick={onClose}
       />
@@ -136,83 +142,115 @@ export default function Settings({ onClose }: SettingsProps) {
           width: "90%",
           maxWidth: "500px",
           bgcolor: "background.paper",
-          boxShadow: 24,
-          borderRadius: 2,
+          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+          borderRadius: 3,
           p: 3,
           zIndex: 1000,
+          animation: "fadeIn 0.3s ease-in-out",
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Typography variant="h6">API Settings</Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<DeleteForeverIcon />}
-              onClick={handleClearAll}
-              sx={{ mr: 2 }}
-            >
-              Clear All
-            </Button>
-            <IconButton
-              onClick={onClose}
-              size="small"
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", userSelect: "none" }}
+          >
+            API Settings
+          </Typography>
+
+          <IconButton
+            onClick={onClose}
+            size="small"
+            sx={{
+              color: "grey.600",
+              "&:hover": { color: "grey.800" },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </Box>
 
         <List sx={{ width: "100%" }}>
-          {settings.map((setting) => (
-            <ListItem
-              key={`${setting.provider}-${setting.name}`}
-              secondaryAction={
-                <Box>
-                  <IconButton
-                    edge="end"
-                    aria-label="edit"
-                    onClick={() => handleEdit(setting)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => handleDelete(setting)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              }
-            >
-              <ListItemText
-                primary={setting.name}
-                secondary={
-                  API_PROVIDERS.find((p) => p.value === setting.provider)
-                    ?.label || setting.provider
+          {settings.map((setting, index) => (
+            <React.Fragment key={`${setting.provider}-${setting.name}`}>
+              <ListItem
+                sx={{
+                  borderRadius: 3,
+                  "&:hover": { bgcolor: "grey.100" },
+                }}
+                secondaryAction={
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <IconButton
+                      edge="end"
+                      aria-label="edit"
+                      onClick={() => handleEdit(setting)}
+                      sx={{
+                        "&:hover": { color: "primary.dark" },
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDelete(setting)}
+                      sx={{
+                        "&:hover": { color: "error.dark" },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
                 }
-              />
-            </ListItem>
+              >
+                <ListItemText
+                  primary={setting.name}
+                  secondary={
+                    API_PROVIDERS.find((p) => p.value === setting.provider)
+                      ?.label || setting.provider
+                  }
+                />
+              </ListItem>
+              <Divider />
+            </React.Fragment>
           ))}
           <ListItem
             sx={{
-              justifyContent: "center",
+              display: "flex",
+              justifyContent: "space-between",
               mt: 2,
+              fontSize: "0.5rem",
             }}
           >
-            <IconButton
+            <Button
+              color="error"
+              startIcon={<DeleteForeverIcon />}
+              onClick={handleClearAll}
+              variant="outlined"
+              sx={{
+                fontSize: "0.75rem",
+              }}
+            >
+              {"Clear"}
+            </Button>
+            <Button
               color="primary"
+              variant="outlined"
               aria-label="add api setting"
               onClick={handleAdd}
+              startIcon={<AddIcon />}
+              sx={{
+                fontSize: "0.75rem",
+              }}
             >
-              <AddIcon />
-            </IconButton>
+              {"Create"}
+            </Button>
           </ListItem>
         </List>
 
