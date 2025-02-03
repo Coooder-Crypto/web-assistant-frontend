@@ -2,9 +2,11 @@ import type { ExtractResult, Reader } from '@src/types'
 import { defaultReader } from './default'
 import { githubReader } from './github'
 
-const readers: [string, Reader][] = [
-  ['github.com', githubReader],
-]
+// TODO：not full support github
+
+// const readers: [string, Reader][] = [
+//   ['github.com', githubReader],
+// ]
 
 export async function reader(tab: chrome.tabs.Tab): Promise<ExtractResult> {
   if (!tab?.url) {
@@ -14,8 +16,8 @@ export async function reader(tab: chrome.tabs.Tab): Promise<ExtractResult> {
     }
   }
 
-  const matchedReader = readers.find(([pattern]) => tab.url?.includes(pattern))
-  const readPage = matchedReader ? matchedReader[1] : defaultReader
+  // const matchedReader = readers.find(([pattern]) => tab.url?.includes(pattern))
+  const readPage = defaultReader
 
   return await readPage(tab)
 }

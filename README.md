@@ -11,6 +11,18 @@
 
 ## 🚀 Getting Started
 
+### Loading the Extension
+1. Open Chrome/Edge and navigate to `chrome://extensions/`/`edge://extensions/`
+2. Enable "Developer mode"
+3. Click "Load unpacked" and select the `dist` folder from the project directory
+
+### 🎮 Usage
+1. Visit any webpage
+2. click the extension icon to open the chat panel
+3. Start asking questions about the page content!
+
+## 🛠️ Development
+
 ### Prerequisites
 - Node.js (v16 or higher)
 - pnpm (v7 or higher)
@@ -28,20 +40,6 @@ pnpm install
 
 # Build the extension
 pnpm run build
-```
-
-### Loading the Extension
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" in the top right corner
-3. Click "Load unpacked" and select the `dist` folder from the project directory
-
-## 🎮 Usage
-1. Visit any webpage
-2. click the extension icon to open the chat panel
-3. Start asking questions about the page content!
-
-## 🛠️ Development
-```bash
 # Build for production
 pnpm run build
 
@@ -82,6 +80,18 @@ Please feel free to submit pull requests or open issues for discussion.
 
 ## 🚀 开始使用
 
+### 加载扩展
+1. 打开Chrome浏览器/Edge浏览器，访问 `chrome://extensions/`/`edge://extensions/`
+2. 启用"开发者模式"
+3. 点击"加载已解压的扩展程序"，选择项目目录中的 `dist` 文件夹
+
+### 🎮 使用方法
+1. 访问任意网页
+2. 点击扩展图标打开聊天面板
+3. 开始询问关于页面内容的问题吧！
+
+## 🛠️ 开发相关
+
 ### 环境要求
 - Node.js（v16或更高版本）
 - pnpm（v7或更高版本）
@@ -99,20 +109,6 @@ pnpm install
 
 # 构建扩展
 pnpm run build
-```
-
-### 加载扩展
-1. 打开Chrome浏览器，访问 `chrome://extensions/`
-2. 在右上角启用"开发者模式"
-3. 点击"加载已解压的扩展程序"，选择项目目录中的 `dist` 文件夹
-
-## 🎮 使用方法
-1. 访问任意网页
-2. 点击扩展图标打开聊天面板
-3. 开始询问关于页面内容的问题吧！
-
-## 🛠️ 开发相关
-```bash
 # 生产环境构建
 pnpm run build
 
