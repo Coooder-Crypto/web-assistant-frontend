@@ -1,6 +1,5 @@
-import type { ExtractResult, Reader } from '@src/types'
+import type { ExtractResult } from '@src/types'
 import { defaultReader } from './default'
-import { githubReader } from './github'
 
 // TODO：not full support github
 

@@ -1,6 +1,6 @@
 import type { ApiSettings } from '@src/types'
-import { Box } from '@mui/material'
 import { useApp } from '@src/hooks/useApp'
+import { colors, Toast } from '@src/ui'
 import { apiManager } from '@src/utils/api'
 import { useCallback, useEffect, useState } from 'react'
 import { useContent } from '../hooks/useContent'
@@ -20,6 +20,10 @@ export default function Chat() {
   const [settings, setSettings] = useState<ApiSettings[]>([])
   const [setting, setSetting] = useState<ApiSettings | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error' | 'warning' | 'info'
+  } | null>(null)
 
   const {
     pageTitle,
@@ -39,7 +43,9 @@ export default function Chat() {
 
   const setGlobalError = useCallback(
     (error: any) => {
+      const message = error instanceof Error ? error.message : String(error)
       setError(error)
+      setToast({ message, type: 'error' })
     },
     [setError],
   )
@@ -47,6 +53,9 @@ export default function Chat() {
   const setGlobalSuccess = useCallback(
     (message: string | null) => {
       setSuccess(message)
+      if (message) {
+        setToast({ message, type: 'success' })
+      }
     },
     [setSuccess],
   )
@@ -71,8 +80,9 @@ export default function Chat() {
       ])
 
       if (settings.length === 0) {
+        setIsSettingsOpen(true)
         throw new Error(
-          'No API providers configured. Please check your settings.',
+          'No AI providers configured. Please add a provider to start chatting.',
         )
       }
 
@@ -146,31 +156,35 @@ export default function Chat() {
     loadInitialState()
   }
 
+  const containerStyles = {
+    width: '100%',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+    backgroundColor: colors.neutral[850], // Dark background
+    fontFamily: 'Helvetica, Helvetica Neue, Arial, sans-serif', // Clean font stack
+    color: colors.neutral[100],
+  }
+
+  const mainContentStyles = {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+  }
+
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        bgcolor: 'background.default',
-      }}
-    >
+    <div style={containerStyles}>
       <Header
         pageTitle={pageTitle || 'Web Assistant'}
         onSettingsClick={() => setIsSettingsOpen(true)}
+        isConnected={!!setting}
       />
 
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}
-      >
+      <div style={mainContentStyles}>
         <ChatBoard messages={messages} isSending={isSending} />
+
         <ToolBar
           providers={settings}
           selectedProvider={setting?.name || ''}
@@ -180,10 +194,22 @@ export default function Chat() {
           disabled={messages.length === 0}
           loading={isLoading || isSending}
         />
-        <ChatInput onSend={handleSendMessage} disabled={isSending} />
-      </Box>
+
+        <ChatInput
+          onSend={handleSendMessage}
+          disabled={isSending || !setting}
+        />
+      </div>
 
       {isSettingsOpen && <Settings onClose={handleCloseSettings} />}
-    </Box>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
   )
 }

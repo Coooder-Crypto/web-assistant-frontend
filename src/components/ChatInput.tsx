@@ -1,14 +1,13 @@
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
-import SendIcon from '@mui/icons-material/Send'
-import { Box, IconButton, Stack, TextField } from '@mui/material'
-import React, { useState } from 'react'
+import { colors, radius, spacing } from '@src/ui'
+import { useState } from 'react'
+import { ModernInput } from './ModernInput'
 
 interface ChatInputProps {
   onSend: (content: string) => Promise<void>
   disabled: boolean
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
+export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState('')
   const [isComposing, setIsComposing] = useState(false)
 
@@ -31,81 +30,90 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
     }
   }
 
-  const handleCompositionStart = () => {
-    setIsComposing(true)
+  const quickActions = [
+    { text: '概括这个页面', icon: '📝', label: 'Summarize page' },
+    { text: '解释这个页面的主要内容', icon: '💡', label: 'Explain content' },
+    { text: '这个页面有什么有趣的地方？', icon: '🔍', label: 'Find insights' },
+  ]
+
+  const containerStyles = {
+    padding: spacing[4],
+    borderTop: `1px solid ${colors.neutral[700]}`, // Dark border
+    backgroundColor: colors.neutral[800], // Dark input area bg
   }
 
-  const handleCompositionEnd = () => {
-    setIsComposing(false)
+  const quickActionsStyles = {
+    display: 'flex',
+    gap: spacing[2],
+    marginBottom: spacing[3],
+    overflowX: 'auto' as const,
+    paddingBottom: spacing[1],
+  }
+
+  const quickActionStyles = {
+    'display': 'flex',
+    'alignItems': 'center',
+    'gap': spacing[1],
+    'padding': `${spacing[2]} ${spacing[3]}`,
+    'backgroundColor': colors.neutral[700], // Dark button bg
+    'border': `1px solid ${colors.neutral[600]}`, // Dark border
+    'borderRadius': radius.lg,
+    'fontSize': '0.875rem',
+    'color': colors.neutral[200], // Light text
+    'cursor': disabled ? 'not-allowed' : 'pointer',
+    'whiteSpace': 'nowrap' as const,
+    'transition': 'all 150ms ease',
+
+    '&:hover': !disabled
+      ? {
+          backgroundColor: colors.purple[700], // Purple hover for dark theme
+          borderColor: colors.purple[600],
+          color: colors.neutral[100],
+        }
+      : {},
+  }
+
+  const inputContainerStyles = {
+    display: 'flex',
+    gap: spacing[3],
+    alignItems: 'flex-end',
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{
-        display: 'flex',
-        gap: 1,
-        p: 2,
-        borderTop: 1,
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-      }}
-    >
-      <TextField
-        fullWidth
-        multiline
-        rows={3}
-        maxRows={4}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onCompositionStart={handleCompositionStart}
-        onCompositionEnd={handleCompositionEnd}
-        placeholder="Type your message..."
-        disabled={disabled}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-      <Stack
-        direction="column"
-        spacing={1}
-        justifyContent="space-between"
-        sx={{
-          height: '100%',
-        }}
-      >
-        <IconButton
-          onClick={e => handleSubmit(e, '概括这个页面')}
+    <div style={containerStyles}>
+      {/* Quick Actions */}
+      <div style={quickActionsStyles}>
+        {quickActions.map(action => (
+          <button
+            key={action.text}
+            type="button"
+            style={quickActionStyles}
+            onClick={e => handleSubmit(e, action.text)}
+            disabled={disabled}
+            title={action.label}
+          >
+            <span>{action.icon}</span>
+            <span>{action.text}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Input Container */}
+      <div style={inputContainerStyles}>
+        <ModernInput
+          value={input}
+          onChange={setInput}
+          placeholder="询问关于这个页面的任何问题..."
+          multiline
+          rows={1}
+          maxRows={4}
           disabled={disabled}
-          color="primary"
-          size="small"
-          title="Summarize page"
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: 1,
-          }}
-        >
-          <AutoFixHighIcon fontSize="small" />
-        </IconButton>
-        <IconButton
-          type="submit"
-          disabled={!input.trim() || disabled}
-          color="primary"
-          size="small"
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: 1,
-          }}
-        >
-          <SendIcon fontSize="small" />
-        </IconButton>
-      </Stack>
-    </Box>
+          onKeyDown={handleKeyDown}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={() => setIsComposing(false)}
+          onSubmit={value => handleSubmit(new Event('submit') as any, value)}
+        />
+      </div>
+    </div>
   )
 }

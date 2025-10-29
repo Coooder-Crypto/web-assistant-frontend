@@ -1,0 +1,230 @@
+/* Modern animations for AI tool UI */
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeOut {
+  from { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+  to { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes slideDown {
+  from { 
+    transform: translateY(-100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.5; 
+  }
+}
+
+@keyframes spin {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes typing {
+  0%, 20% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.2); 
+  }
+  80%, 100% { 
+    transform: scale(1); 
+  }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px 0 rgb(99 102 241 / 0.1); 
+  }
+  50% { 
+    box-shadow: 0 0 40px 0 rgb(99 102 241 / 0.2); 
+  }
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Utility classes */
+.fade-in {
+  animation: fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.fade-out {
+  animation: fadeOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.slide-up {
+  animation: slideUp 300ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.slide-down {
+  animation: slideDown 300ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.typing {
+  animation: typing 1.4s ease-in-out infinite;
+}
+
+.glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.smooth-transition-fast {
+  transition: all 150ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Hover effects */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px 0 rgb(99 102 241 / 0.15);
+}
+
+/* Loading shimmer effect */
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* Message animations */
+.message-enter {
+  animation: fadeIn 300ms ease-out, slideUp 300ms ease-out;
+}
+
+.message-typing .typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #a1a1aa;
+  margin: 0 1px;
+  animation: typing 1.4s ease-in-out infinite;
+}
+
+.message-typing .typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.message-typing .typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Button interactions */
+.btn-press:active {
+  transform: translateY(1px);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 250ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus styles for accessibility */
+.focus-ring:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode animations */
+@media (prefers-color-scheme: dark) {
+  .shimmer {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 1000px 100%;
+  }
+}
