@@ -274,7 +274,7 @@ export default function Settings({ onClose }: SettingsProps) {
                               background:
                                 setting.provider === 'openai'
                                   ? colors.primary[100]
-                                  : setting.provider === 'deepseek'
+                                  : setting.provider === 'deepseek' || setting.provider === 'siliconflow'
                                     ? colors.ai.gradient.start
                                     : colors.neutral[100],
                               display: 'flex',
@@ -283,7 +283,11 @@ export default function Settings({ onClose }: SettingsProps) {
                               fontSize: typography.fontSize.lg,
                             }}
                           >
-                            {setting.provider === 'openai' ? '🤖' : '🧠'}
+                            {setting.provider === 'openai'
+                              ? '🤖'
+                              : setting.provider === 'siliconflow'
+                                ? '⚡️'
+                                : '🧠'}
                           </div>
                           <div style={settingDetailsStyles}>
                             <h3 style={settingNameStyles}>{setting.name}</h3>

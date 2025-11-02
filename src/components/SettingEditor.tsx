@@ -83,6 +83,13 @@ export default function SettingEditor({ open, onClose, setting, onSave }: Settin
             multiline
             rows={3}
           />
+          <TextField
+            label="Model ID (Optional)"
+            value={editedSetting.model || ''}
+            onChange={e => setEditedSetting(prev => ({ ...prev, model: e.target.value }))}
+            fullWidth
+            helperText="Leave blank to use the default model for the selected provider."
+          />
           {editedSetting.provider === 'openai' && (
             <>
               <TextField

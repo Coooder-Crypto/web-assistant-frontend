@@ -1,7 +1,8 @@
-export type ApiProvider = 'deepseek' | 'openai' | ''
+export type ApiProvider = 'deepseek' | 'openai' | 'siliconflow' | ''
 
 export const API_PROVIDERS = [
   { label: 'Deepseek', value: 'deepseek' },
+  { label: 'SiliconFlow Deepseek', value: 'siliconflow' },
   { label: 'ChatGPT', value: 'openai' },
 ] as const
 

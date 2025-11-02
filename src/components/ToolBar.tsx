@@ -105,7 +105,9 @@ export function ToolBar({
             variant={
               currentProvider.provider === 'openai'
                 ? 'primary'
-                : currentProvider.provider === 'deepseek' ? 'ai' : 'secondary'
+                : currentProvider.provider === 'deepseek' || currentProvider.provider === 'siliconflow'
+                  ? 'ai'
+                  : 'secondary'
             }
             size="sm"
           >

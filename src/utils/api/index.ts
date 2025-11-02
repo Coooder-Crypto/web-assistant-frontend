@@ -1,6 +1,7 @@
 import type { ApiConfig, ApiProvider, ChatAPI, ChatContext, ChatMessage, ChatOptions, ChatResponse } from '@src/types/api'
 import { ChatGPTAPI } from './chatgpt'
 import { DeepseekAPI } from './deepseek'
+import { SiliconFlowAPI } from './siliconflow'
 
 class APIManager {
   private static instance: APIManager
@@ -33,6 +34,9 @@ class APIManager {
         break
       case 'deepseek':
         api = new DeepseekAPI(config)
+        break
+      case 'siliconflow':
+        api = new SiliconFlowAPI(config)
         break
       default:
         throw new Error(`Unknown provider: ${provider}`)
